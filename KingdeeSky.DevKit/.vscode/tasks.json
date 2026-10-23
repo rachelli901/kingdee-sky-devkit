@@ -1,0 +1,62 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "构建：密钥扫描 → 编译 → 测试门禁 → 打包",
+      "detail": "build.bat（委托 eng\\build.ps1），版本化 ZIP 产出到 artifacts\\",
+      "type": "shell",
+      "command": ".\\build.bat",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "测试：全量 62 条用例（门禁）",
+      "type": "shell",
+      "command": ".\\tests\\run-tests.bat",
+      "problemMatcher": []
+    },
+    {
+      "label": "测试：L1 用例（按编号/分组/全部）",
+      "detail": "提供参数后运行，例如 -All / -Group A / -Case TC-L1-001",
+      "type": "shell",
+      "command": ".\\tests\\run-cases.bat",
+      "args": ["${input:caseArg}"],
+      "problemMatcher": []
+    },
+    {
+      "label": "测试：列出 62 条用例编号映射",
+      "type": "shell",
+      "command": ".\\tests\\run-cases.bat",
+      "args": ["-List"],
+      "problemMatcher": []
+    },
+    {
+      "label": "安全：明文密钥静态扫描",
+      "type": "shell",
+      "command": ".\\scan-secrets.bat",
+      "problemMatcher": []
+    },
+    {
+      "label": "自检：--selfcheck（不联网，退出码 0=就绪）",
+      "type": "shell",
+      "command": ".\\src\\KingdeeSky.WebApiClient\\bin\\Release\\KingdeeSky.WebApiClient.exe",
+      "args": ["--selfcheck"],
+      "problemMatcher": []
+    },
+    {
+      "label": "性能：本机 stub 冒烟（run-perf.ps1）",
+      "type": "shell",
+      "command": "powershell",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\\perf\\run-perf.ps1"],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "caseArg",
+      "type": "promptString",
+      "description": "run-cases 参数：-All 或 -Group A 或 -Case TC-L1-001（留空视为全部）",
+      "default": "-All"
+    }
+  ]
+}

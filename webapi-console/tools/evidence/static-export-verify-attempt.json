@@ -1,0 +1,199 @@
+{
+  "evidence_type": "static-export-browser-evidence/v1",
+  "generator": "verify_static_export.mjs",
+  "kind": "b2b-page",
+  "delivery_adapter": "static-export",
+  "export_mode": "single-file",
+  "visual_provider": "banlan",
+  "artifact_path": "../../KingdeeSky.WebApiClient-浏览器操作台.html",
+  "artifact_path_base": "evidence-directory",
+  "captured_at": "2026-10-23T08:24:37.596Z",
+  "browser": "�������е�������Ự�д򿪡�",
+  "contract_sha256": "4fc77f870db01a09ed92f573cde7545fdf23b150c72a56e33bf42e42363c9e06",
+  "artifact_sha256": "e2323a260c5b9408996b648ce2365e7650e942bee740105e75e9887e7bfcc822",
+  "media_manifest_sha256": null,
+  "checks": {
+    "structure": "failed",
+    "offline": "passed",
+    "render": "failed",
+    "provider": "failed",
+    "console": "failed",
+    "responsive": "failed"
+  },
+  "sandbox_runtime": {
+    "authored_violations": [
+      "sandbox-navigation-api-not-supported",
+      "sandbox-modal-api-not-supported",
+      "sandbox-permission-api-not-supported"
+    ],
+    "bundled_warnings": [],
+    "runtime_shim_usage": []
+  },
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "DevTools listening on ws://127.0.0.1:58308/devtools/browser/7e10c3fa-cfa4-4a05-8909-b8a4fb22035e",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection."
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "DevTools listening on ws://127.0.0.1:58308/devtools/browser/7e10c3fa-cfa4-4a05-8909-b8a4fb22035e",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection."
+      ]
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "DevTools listening on ws://127.0.0.1:58308/devtools/browser/7e10c3fa-cfa4-4a05-8909-b8a4fb22035e",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection.",
+        "Created TensorFlow Lite XNNPACK delegate for CPU."
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection.",
+        "Created TensorFlow Lite XNNPACK delegate for CPU.",
+        "[16404:36060:1023/162419.766:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162419.767:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162421.876:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 36840: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162421.939:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 26148: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162422.000:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 38940: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162422.058:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 29700: 拒绝访问。 (0x5)"
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "[16404:3308:1023/162404.719:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection.",
+        "Created TensorFlow Lite XNNPACK delegate for CPU.",
+        "[16404:36060:1023/162419.766:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162419.767:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162421.876:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 36840: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162421.939:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 26148: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162422.000:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 38940: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162422.058:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 29700: 拒绝访问。 (0x5)"
+      ]
+    },
+    {
+      "width": 2560,
+      "height": 1080,
+      "process_status": 0,
+      "state": null,
+      "provider": null,
+      "main": null,
+      "error_count": null,
+      "error_messages": [],
+      "sandbox_api_usage": [],
+      "overflow": null,
+      "app_preview": null,
+      "media": null,
+      "stderr": [
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret",
+        "[16404:3308:1023/162404.849:ERROR:google_apis\\gcm\\engine\\mcs_client.cc:704] Failed to log in to GCM, resetting connection.",
+        "Created TensorFlow Lite XNNPACK delegate for CPU.",
+        "[16404:36060:1023/162419.766:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162419.767:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 32716: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162421.876:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 36840: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162421.939:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 26148: 拒绝访问。 (0x5)",
+        "[16404:36060:1023/162422.000:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 38940: 拒绝访问。 (0x5)",
+        "[16404:31760:1023/162422.058:ERROR:chrome\\updater\\ipc\\update_service_dialer_win.cc:76] Failed to open named pipe server process 29700: 拒绝访问。 (0x5)",
+        "[16404:3308:1023/162434.367:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+      ]
+    }
+  ],
+  "structure": {
+    "ok": false,
+    "errors": [
+      "network-runtime-not-supported",
+      "sandbox-navigation-api-not-supported",
+      "sandbox-modal-api-not-supported",
+      "sandbox-permission-api-not-supported"
+    ],
+    "references": [],
+    "local_references": [],
+    "external_references": [],
+    "sandbox_runtime": {
+      "authored_violations": [
+        "sandbox-navigation-api-not-supported",
+        "sandbox-modal-api-not-supported",
+        "sandbox-permission-api-not-supported"
+      ],
+      "bundled_warnings": []
+    }
+  }
+}

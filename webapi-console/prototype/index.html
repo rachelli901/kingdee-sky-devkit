@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebApiClient 演示操作台</title>
+<link rel="icon" href="data:,">
+<script src="./vendor/babel.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "./vendor/esm.sh/react@18.3.1/__entry.js?v=5",
+    "react/jsx-runtime": "./vendor/esm.sh/react@18.3.1/jsx-runtime/__entry.js?v=5",
+    "react-dom": "./vendor/esm.sh/react-dom@18.3.1/__entry.js?v=5",
+    "react-dom/client": "./vendor/esm.sh/react-dom@18.3.1/client/__entry.js?v=5",
+    "antd": "./vendor/esm.sh/antd@5.29.3/__entry.js?v=5",
+    "antd/locale/zh_CN": "./vendor/esm.sh/antd@5.29.3/locale/zh_CN/__entry.js?v=5",
+    "@ant-design/icons": "./vendor/esm.sh/@ant-design/icons@6.1.0/__entry.js?v=5",
+    "rc-util/lib/Dom/canUseDom": "./vendor/esm.sh/rc-util@5.44.4/lib/Dom/canUseDom/__entry.js?v=5",
+    "@baidu/qianfan-antd-kit": "./vendor/qianfan-antd-kit.js?v=5"
+  }
+}
+</script>
+<link rel="stylesheet" href="./vendor/qianfan-antd-kit.css">
+<style>
+  body { margin: 0; }
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 16px;
+  }
+  .page-header .ph-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .page-sub { display: block; font-size: 12px; }
+  .ant-table-thead > tr > th { white-space: nowrap; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  /* ===== 50px 全局顶导（去品牌化工作区） ===== */
+  .gheader {
+    height: 50px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 16px;
+    background: #fff;
+    border-bottom: 0.5px solid #e4e7eb;
+    color: rgba(0, 0, 0, 0.88);
+    font-size: 13px;
+  }
+  .gheader .gh-link { color: rgba(0, 0, 0, 0.88); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .gheader .gh-spacer { flex: 1; }
+  .gheader .gh-console { height: 32px; background: #f7f9fc; border: none; border-radius: 6px; box-shadow: none; font-size: 13px; color: rgba(0, 0, 0, 0.88); }
+  .gheader .gh-console:hover { background: #f2f5fa !important; color: rgba(0, 0, 0, 0.88) !important; }
+  .gheader .gh-icon { font-size: 16px; color: rgba(0, 0, 0, 0.65); cursor: pointer; }
+  .gheader .gh-en { border: 1px solid rgba(0, 0, 0, 0.25); border-radius: 4px; padding: 0 4px; font-size: 12px; line-height: 18px; color: rgba(0, 0, 0, 0.65); cursor: pointer; }
+  .neutral-brand { display: inline-flex; align-items: center; min-width: 92px; color: #1f2329; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  [data-qdk-theme="dark"] .gheader { background: #141414; border-bottom-color: #303030; color: rgba(255, 255, 255, 0.85); }
+  [data-qdk-theme="dark"] .gheader .gh-link { color: rgba(255, 255, 255, 0.85); }
+  [data-qdk-theme="dark"] .gheader .gh-console { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
+  [data-qdk-theme="dark"] .gheader .gh-console:hover { background: rgba(255, 255, 255, 0.16) !important; color: rgba(255, 255, 255, 0.85) !important; }
+  [data-qdk-theme="dark"] .gheader .gh-icon { color: rgba(255, 255, 255, 0.65); }
+  [data-qdk-theme="dark"] .gheader .gh-en { border-color: rgba(255, 255, 255, 0.25); color: rgba(255, 255, 255, 0.65); }
+  [data-qdk-theme="dark"] .neutral-brand { color: rgba(255, 255, 255, 0.85); }
+  /* ===== 左侧单栏侧导 ===== */
+  .side {
+    width: 200px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    background: #f7f9fc;
+    border-right: 0.5px solid #e4e7eb;
+    transition: width .2s;
+    overflow: hidden;
+  }
+  .side.collapsed { width: 48px; }
+  .side-title {
+    height: 50px; line-height: 50px; flex-shrink: 0;
+    padding: 0 24px; font-size: 14px; font-weight: 500; color: #000;
+    border-bottom: 0.5px solid #e4e7eb;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .side.collapsed .side-title { padding: 0; text-align: center; }
+  .side-menu { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; scrollbar-width: none; }
+  .side-menu::-webkit-scrollbar { display: none; }
+  .side .ant-menu { background: transparent !important; border-inline-end: none !important; padding: 0 8px; font-size: 13px; }
+  .side.collapsed .ant-menu { padding: 0; width: 100% !important; }
+  .side .ant-menu-item::after { display: none !important; }
+  .side .ant-menu-item, .side .ant-menu-submenu-title {
+    border: 0.5px solid transparent; border-radius: 6px;
+    padding-left: 12px !important; padding-right: 12px !important;
+    margin-inline: 0 !important; width: 100% !important;
+  }
+  .side.collapsed .ant-menu-item,
+  .side.collapsed .ant-menu-submenu-title {
+    display: flex; align-items: center; justify-content: center;
+    padding-inline: 0 !important;
+  }
+  .side.collapsed .ant-menu-item-icon { margin-inline: 0 !important; }
+  .side.collapsed .ant-menu-title-content { display: none !important; }
+  .side .ant-menu-sub { background: transparent !important; }
+  .side .ant-menu-sub .ant-menu-item { padding-left: 36px !important; }
+  [data-qdk-theme="light"] .side .ant-menu-item,
+  [data-qdk-theme="light"] .side .ant-menu-submenu-title { color: #5c5f66 !important; }
+  [data-qdk-theme="light"] .side .ant-menu-item-icon { color: #a2abbd !important; }
+  [data-qdk-theme="light"] .side .ant-menu-item:hover,
+  [data-qdk-theme="light"] .side .ant-menu-submenu-title:hover { background-color: #e4e8f0 !important; }
+  [data-qdk-theme="light"] .side .ant-menu-item-selected {
+    background-color: #fff !important; color: #000 !important; font-weight: 500;
+    border-color: #e4e7eb !important;
+  }
+  [data-qdk-theme="light"] .side .ant-menu-item-selected .ant-menu-item-icon { color: #000 !important; }
+  [data-qdk-theme="light"] .side .ant-menu-submenu-selected > .ant-menu-submenu-title { color: #000 !important; font-weight: 500; }
+  [data-qdk-theme="light"] .side .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon { color: #000 !important; }
+  .side-footer {
+    height: 40px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 20px; font-size: 14px; color: #495366;
+    border-top: 0.5px solid #e4e7eb; cursor: pointer; user-select: none;
+  }
+  .side.collapsed .side-footer { padding: 0; justify-content: center; }
+  .side.collapsed .side-footer svg { transform: rotate(180deg); }
+  [data-qdk-theme="dark"] .side { background: #141414; border-right-color: #303030; }
+  [data-qdk-theme="dark"] .side-title { color: rgba(255, 255, 255, 0.85); border-bottom-color: #303030; }
+  [data-qdk-theme="dark"] .side-footer { color: rgba(255, 255, 255, 0.65); border-top-color: #303030; }
+  /* 业务区样式（不选中 provider 内部类） */
+  .app-main { flex: 1; overflow: auto; padding: 24px; }
+  .app-section { margin-bottom: 16px; }
+  .app-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .app-code { font-family: Consolas, Menlo, monospace; font-size: 12px; background: rgba(0,0,0,0.04); border-radius: 6px; padding: 12px; white-space: pre-wrap; word-break: break-all; margin: 0; }
+  [data-qdk-theme="dark"] .app-code { background: rgba(255,255,255,0.08); }
+  .app-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+  .app-flow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .app-hint { display: block; font-size: 12px; }
+  .page-h1 { font-size: 20px; font-weight: 600; line-height: 28px; margin: 0 0 4px; }
+  [data-qdk-theme="dark"] .page-h1 { color: rgba(255, 255, 255, 0.88); }
+  /* 协议日志详情 */
+  .proto-json { font-family: Consolas, Menlo, monospace; font-size: 12px; background: rgba(0,0,0,0.04); border-radius: 6px; padding: 12px; white-space: pre-wrap; word-break: break-all; margin: 8px 0 0; max-height: 220px; overflow: auto; }
+  [data-qdk-theme="dark"] .proto-json { background: rgba(255,255,255,0.08); }
+  .proto-label { font-size: 12px; font-weight: 600; margin-top: 8px; }
+  /* 响应式与无障碍 */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  :focus-visible { outline: 2px solid #1677ff; outline-offset: 2px; }
+  @media (max-width: 900px) {
+    .app-main { padding: 12px; }
+  }
+  @media (max-width: 720px) {
+    .page-header { flex-direction: column; align-items: stretch; gap: 8px; }
+    .page-header .ph-controls { justify-content: flex-start; }
+    .gheader { gap: 8px; padding: 0 10px; }
+    .gheader .gh-search, .gheader .gh-link, .gheader .gh-en { display: none; }
+    .neutral-brand { min-width: 0; }
+  }
+  #boot {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: rgba(0, 0, 0, 0.45);
+    padding: 48px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<script>
+  if (typeof window.process === 'undefined') {
+    window.process = {env: {NODE_ENV: 'production'}};
+  }
+  window.__errs = [];
+  function showErrs() {
+    var b = document.getElementById('boot');
+    if (b) b.innerHTML = '<pre style="text-align:left;color:#d00;white-space:pre-wrap">' + window.__errs.join('\n\n') + '</pre>';
+  }
+  window.addEventListener('error', function (e) {
+    var t = e.target;
+    var res = t && t.tagName ? (t.tagName + ' ' + (t.src || t.href || '')).slice(0, 300) : '';
+    window.__errs.push(e.message || ('资源加载失败: ' + res));
+    showErrs();
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    window.__errs.push('rejection: ' + e.reason);
+    showErrs();
+  });
+  window.__probe = {};
+  ["react", "react-dom/client", "antd", "@ant-design/icons", "@baidu/qianfan-antd-kit"].forEach(function (s) {
+    import(s).then(function () {
+      window.__probe[s] = 'ok';
+    }).catch(function (e) {
+      window.__probe[s] = 'FAIL: ' + String(e && e.message || e).slice(0, 200);
+      var b = document.getElementById('boot');
+      if (b) b.innerHTML += '<div style="color:#d00">[probe] ' + s + ' → ' + window.__probe[s] + '</div>';
+    });
+  });
+  window.__verify = async function () {
+    var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    var items = {};
+    var t0 = Date.now(), rendered = false;
+    while (Date.now() - t0 < 20000) {
+      if (document.querySelector('.ant-table-tbody tr')) { rendered = true; break; }
+      await sleep(300);
+    }
+    items.render = rendered;
+    var fail = [];
+    for (var k in window.__probe) if (window.__probe[k] !== 'ok') fail.push(k + ': ' + window.__probe[k]);
+    items.probe = fail.length ? fail : 'ok';
+    items.errs = (window.__errs || []).slice(0, 5);
+    items.rows = rendered ? document.querySelectorAll('.ant-table-tbody tr:not(.ant-table-measure-row)').length : 0;
+    items.hash = location.hash;
+    items.breadcrumb = (document.querySelector('.ant-breadcrumb') || {}).innerText || '';
+    items.dataMode = typeof window.__transport === 'function' ? window.__transport().mode : 'unknown';
+    items.protoLog = typeof window.__protoLog === 'function' ? window.__protoLog().length : -1;
+    var sw = document.querySelector('[data-od-id="theme-switch"]');
+    var leak = -1, switched = false;
+    if (sw) {
+      sw.click(); await sleep(600);
+      switched = document.documentElement.getAttribute('data-qdk-theme') === 'dark';
+      if (switched) {
+        leak = 0;
+        var els = document.querySelectorAll('body *');
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i], cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+          var m = cs.backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (!m) continue;
+          var a = m[4] === undefined ? 1 : parseFloat(m[4]);
+          if (a > 0.9 && +m[1] > 242 && +m[2] > 242 && +m[3] > 242) {
+            var r = el.getBoundingClientRect();
+            if (r.width > 40 && r.height > 20) leak++;
+          }
+        }
+        sw.click(); await sleep(400);
+      } else { sw.click(); }
+    }
+    items.darkMode = { switched: switched, lightLeaks: leak };
+    items.ok = items.render && items.probe === 'ok' && !items.errs.length && items.rows > 0 && switched && leak === 0;
+    return items;
+  };
+</script>
+<div id="root"><div id="boot">正在加载 qianfan-antd-kit + antd…</div></div>
+
+<script type="text/babel" data-type="module" data-presets="react">
+import React, { useState, useEffect, useMemo } from "react";
+import { createRoot } from "react-dom/client";
+import {
+  ConfigProvider, App as KitApp, Menu, Button, Select, Input, InputNumber,
+  Card, Table, Badge, Avatar, Typography, Switch, Empty, Form, Modal,
+  Descriptions, Tag, Steps, Alert, Statistic, Drawer, Segmented, Space,
+  Divider, Tabs, Progress, Spin, Popconfirm, Popover, Tooltip, message,
+} from "@baidu/qianfan-antd-kit";
+import {
+  DashboardOutlined, CheckCircleOutlined, SafetyCertificateOutlined,
+  ShoppingCartOutlined, FileAddOutlined, SafetyOutlined, LoginOutlined,
+  SearchOutlined, MenuOutlined, DownOutlined, BellOutlined, MobileOutlined,
+  HomeOutlined, ReloadOutlined, PlusOutlined, EyeOutlined, CheckOutlined,
+  CloudServerOutlined, KeyOutlined, ExclamationCircleOutlined, LockOutlined,
+  UnlockOutlined, AuditOutlined, SendOutlined, ArrowRightOutlined,
+  ApiOutlined, DatabaseOutlined, DisconnectOutlined, ThunderboltOutlined,
+  HistoryOutlined, DeleteOutlined, ClearOutlined, FilterOutlined,
+  SyncOutlined, BulbOutlined,
+} from "@ant-design/icons";
+import zhCN from "antd/locale/zh_CN";
+
+const { Title, Text, Paragraph } = Typography;
+
+/* ============================================================
+ * ① 路由表（contract navigation_items 1:1）
+ * ============================================================ */
+const ROUTES = {
+  "/overview":   { name: "操作台总览", group: null },
+  "/selfcheck":  { name: "部署自检",   group: null },
+  "/auth":       { name: "登录鉴权",   group: null },
+  "/purchase":   { name: "采购订单",   group: null },
+  "/custom-doc": { name: "自定义单据", group: null },
+  "/security":   { name: "传输安全策略", group: null },
+};
+const PAGE_SUB = {
+  "/overview": "客户端能力全景与演示路径",
+  "/selfcheck": "模拟 KingdeeSky.WebApiClient.exe --selfcheck [--json]",
+  "/auth": "密码 / AppID+AppSec 两种模式与四类密钥来源",
+  "/purchase": "查询 / 建单 / 提交 / 审核 / 反审核 / 删除 / 查看 / 下推 全流程",
+  "/custom-doc": "二开自定义单据 SKY_ExpReimburse 的 Save / Submit / Audit",
+  "/security": "强制 HTTPS 默认策略与显式放行明文 HTTP",
+};
+
+function useHashRoute() {
+  const [route, setRoute] = useState(() => location.hash.slice(1) || "/overview");
+  useEffect(() => {
+    const on = () => setRoute(location.hash.slice(1) || "/overview");
+    window.addEventListener("hashchange", on);
+    return () => window.removeEventListener("hashchange", on);
+  }, []);
+  return route;
+}
+
+/* ============================================================
+ * ② 侧导图标（antd icon 组件，fill 随 currentColor）
+ * ============================================================ */
+const NAV_ICONS = {
+  overview: <DashboardOutlined />,
+  selfcheck: <CheckCircleOutlined />,
+  auth: <LoginOutlined />,
+  purchase: <ShoppingCartOutlined />,
+  customdoc: <FileAddOutlined />,
+  security: <SafetyOutlined />,
+};
+
+const navItems = [
+  { key: "/overview",   icon: NAV_ICONS.overview,   label: "操作台总览" },
+  { key: "/selfcheck",  icon: NAV_ICONS.selfcheck,  label: "部署自检" },
+  { key: "/auth",       icon: NAV_ICONS.auth,       label: "登录鉴权" },
+  { key: "/purchase",   icon: NAV_ICONS.purchase,   label: "采购订单" },
+  { key: "/custom-doc", icon: NAV_ICONS.customdoc,  label: "自定义单据" },
+  { key: "/security",   icon: NAV_ICONS.security,   label: "传输安全策略" },
+];
+const collapseIcon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" d="M2 3h12M2 8h6"/><path fill="currentColor" d="M11.22 9.598V6.402a.5.5 0 0 1 .765-.424l2.556 1.598a.5.5 0 0 1 0 .848l-2.556 1.598a.5.5 0 0 1-.765-.424"/><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" d="M2 13h12"/></svg>;
+
+/* ============================================================
+ * ③ 端点与演示账号常量
+ *    - 账号 Administrator / demo123，登录失败返回 LoginResultType=0
+ *    - 9 个 .kdsvc 端点语义：登录/查询/保存/提交/审核/反审核/删除/查看/下推
+ *    - 单据状态：A=暂存(草稿)  B=已提交  C=已审核
+ *    - 保存时强制写 Id=内码、FBillNo=SKY{formId去下划线}{流水}、基础资料补 FName
+ *    - 删除仅允许非已审核单据；下推目标默认 STK_InStock
+ * ============================================================ */
+const MOCK_USER = "Administrator";
+const MOCK_PASSWORD = "demo123";
+const SVC = {
+  VALIDATE: "Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc",
+  SAVE: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Save.common.kdsvc",
+  SUBMIT: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Submit.common.kdsvc",
+  AUDIT: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Audit.common.kdsvc",
+  UNAUDIT: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.UnAudit.common.kdsvc",
+  DELETE: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Delete.common.kdsvc",
+  VIEW: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.View.common.kdsvc",
+  QUERY: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery.common.kdsvc",
+  PUSH: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Push.common.kdsvc",
+};
+const RESET_SVC = "__reset__";
+/* 行内 / 批量动作 → 端点映射：集中一处，避免三元链在新增动作时静默落到错误端点 */
+const SERVICE_BY_ACTION = { submit: SVC.SUBMIT, audit: SVC.AUDIT, unaudit: SVC.UNAUDIT, delete: SVC.DELETE };
+const SVC_BY_VALUE = {};
+Object.keys(SVC).forEach((k) => { SVC_BY_VALUE[SVC[k]] = k; });
+const SVC_LABEL = {
+  VALIDATE: "ValidateUser", SAVE: "Save", SUBMIT: "Submit", AUDIT: "Audit",
+  UNAUDIT: "UnAudit", DELETE: "Delete", VIEW: "View", QUERY: "ExecuteBillQuery",
+  PUSH: "Push",
+};
+function shortAction(service) {
+  if (service === RESET_SVC) return "ResetDemo";
+  const key = SVC_BY_VALUE[service];
+  return key ? SVC_LABEL[key] : String(service).split(".").filter(Boolean).slice(-2, -1)[0] || service;
+}
+const DEFAULT_ONLINE_BASE = "http://127.0.0.1:18080/K3Cloud";
+const TARGET_FORM = "STK_InStock";
+const SOURCE_LABEL = {
+  offline: "离线内存模拟",
+  live: "在线 mock_server",
+  "offline(fallback)": "离线（自动回退）",
+};
+
+function nowStamp() {
+  const d = new Date();
+  const pad = (n, w) => String(n).padStart(w || 2, "0");
+  return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()) + "." + pad(d.getMilliseconds(), 3);
+}
+function clipText(value, limit) {
+  const s = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+  if (s == null) return "";
+  return s.length > limit ? s.slice(0, limit) + "\n…（已截断，共 " + s.length + " 字符）" : s;
+}
+
+/* ============================================================
+ * ④ 离线内存数据层
+ *    与工程内 perf/mock_server.py 行为完全一致（端点语义/状态机/单号规则/
+ *    基础资料补名/下推目标），使单文件产物无需任何外部服务即可完整演示。
+ * ============================================================ */
+const offlineMock = (() => {
+  let bills = {};
+  let billSeq = 100000;
+  const billNoSeq = {};
+  function nextId() { billSeq += 1; return billSeq; }
+  function nextNo(formId) {
+    const key = String(formId);
+    billNoSeq[key] = (billNoSeq[key] || 0) + 1;
+    return "SKY" + key.replace(/_/g, "") + String(billNoSeq[key]).padStart(3, "0");
+  }
+  const SEED_ROWS = [
+    { FBillNo: "PO20261018001", FDate: "2026-10-18", supNo: "VEN001", supName: "上海示例供应商", status: "C" },
+    { FBillNo: "PO20261019001", FDate: "2026-10-19", supNo: "VEN002", supName: "北京示例供应商", status: "B" },
+    { FBillNo: "PO20261020001", FDate: "2026-10-20", supNo: "VEN003", supName: "广州示例供应商", status: "A" },
+  ];
+  function seedDemoBills() {
+    SEED_ROWS.forEach((row) => {
+      const bid = nextId();
+      if (!bills.PUR_PurchaseOrder) bills.PUR_PurchaseOrder = {};
+      bills.PUR_PurchaseOrder[bid] = {
+        model: {
+          Id: bid, FBillNo: row.FBillNo, FDate: row.FDate,
+          FSupplierId: { FNumber: row.supNo, FName: row.supName },
+          FPurchaseOrgId: { FNumber: "100", FName: "苏州工业园组织" },
+          FDocumentStatus: row.status, FCreatorName: "Administrator", FEntity: [],
+        },
+        status: row.status, number: row.FBillNo,
+      };
+    });
+  }
+  seedDemoBills();
+
+  function okResult(message, bid, number) {
+    const entity = bid != null ? { Id: bid, Number: number } : {};
+    return {
+      Result: {
+        ResponseStatus: { IsSuccess: true, Errors: [], Msg: message },
+        SuccessEntitys: bid != null ? [entity] : [],
+      },
+    };
+  }
+  function failResult(message) {
+    return {
+      Result: {
+        ResponseStatus: { IsSuccess: false, Errors: [{ Message: message }], Msg: message },
+        SuccessEntitys: [],
+      },
+    };
+  }
+  function enrichNames(node) {
+    if (Array.isArray(node)) { node.forEach(enrichNames); return; }
+    if (node && typeof node === "object") {
+      if ("FNumber" in node && !("FName" in node)) node.FName = "演示" + node.FNumber;
+      Object.keys(node).forEach((k) => enrichNames(node[k]));
+    }
+  }
+  function parseData(body) {
+    const raw = body && body.data !== undefined ? body.data : "{}";
+    if (raw && typeof raw === "object") return raw;
+    try { const v = JSON.parse(raw); return v && typeof v === "object" ? v : {}; } catch (e) { return {}; }
+  }
+  function getField(model, path) {
+    let node = model;
+    const parts = String(path).split(".");
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (node && typeof node === "object" && part in node) { node = node[part]; continue; }
+      if (i === 0 && model && typeof model === "object" && part in model) { node = model[part]; continue; }
+      return "";
+    }
+    return node == null ? "" : node;
+  }
+  function resolveIds(body) {
+    const data = parseData(body);
+    const ids = data.Ids || [];
+    return Array.isArray(ids) ? ids.map((i) => parseInt(i, 10)).filter((n) => !isNaN(n) && String(n).trim() !== "") : [];
+  }
+  function stateAction(body, target, actionName) {
+    const formId = body && body.formid ? body.formid : "";
+    const ids = resolveIds(body);
+    const store = bills[formId] || {};
+    const okIds = [], numbers = [];
+    for (let i = 0; i < ids.length; i++) {
+      const rec = store[ids[i]];
+      if (rec === undefined) return failResult("单据 " + ids[i] + " 不存在");
+      rec.status = target;
+      okIds.push(ids[i]);
+      numbers.push(rec.number);
+    }
+    return okResult(actionName + "成功", okIds.length ? okIds[0] : null, numbers.length ? numbers[0] : "");
+  }
+  const HANDLERS = {
+    [SVC.VALIDATE]: (body) => {
+      const b = body || {};
+      if (b.username === MOCK_USER && b.password === MOCK_PASSWORD) return { LoginResultType: 1, Message: "登录成功" };
+      return { LoginResultType: 0, Message: "用户名或密码错误" };
+    },
+    [SVC.SAVE]: (body) => {
+      const b = body || {};
+      const formId = b.formid || "";
+      const data = parseData(b);
+      const bid = nextId();
+      const number = nextNo(formId);
+      data.Id = bid;
+      data.FBillNo = number;
+      enrichNames(data);
+      if (!bills[formId]) bills[formId] = {};
+      bills[formId][bid] = { model: data, status: "A", number: number };
+      return okResult("保存成功", bid, number);
+    },
+    [SVC.SUBMIT]: (body) => stateAction(body, "B", "提交"),
+    [SVC.AUDIT]: (body) => stateAction(body, "C", "审核"),
+    [SVC.UNAUDIT]: (body) => stateAction(body, "B", "反审核"),
+    [SVC.DELETE]: (body) => {
+      const b = body || {};
+      const formId = b.formid || "";
+      const ids = resolveIds(b);
+      const store = bills[formId] || {};
+      for (let i = 0; i < ids.length; i++) {
+        const rec = store[ids[i]];
+        if (rec === undefined) return failResult("单据 " + ids[i] + " 不存在");
+        if (rec.status === "C") return failResult("单据 " + ids[i] + " 已审核，请先反审核再删除");
+        delete store[ids[i]];
+      }
+      return okResult("删除成功");
+    },
+    [SVC.VIEW]: (body) => {
+      const b = body || {};
+      const formId = b.formid || "";
+      const data = parseData(b);
+      const bid = data.Id ? parseInt(data.Id, 10) : 0;
+      const rec = (bills[formId] || {})[bid];
+      if (rec === undefined) return failResult("单据 " + bid + " 不存在");
+      return { Result: rec.model };
+    },
+    [SVC.QUERY]: (body) => {
+      const data = parseData(body);
+      const formId = data.FormId || "";
+      const top = parseInt(data.TopRowCount || 0, 10) || 0;
+      const fields = String(data.FieldKeys || "").split(",").map((s) => s.trim()).filter(Boolean);
+      const store = bills[formId] || {};
+      const rows = [];
+      const keys = Object.keys(store).map((k) => parseInt(k, 10)).sort((a, b) => b - a);
+      for (let i = 0; i < keys.length; i++) {
+        const rec = store[keys[i]];
+        const m = rec.model;
+        const row = fields.map((f) => {
+          let val = getField(m, f);
+          if ((val === "" || val == null) && f === "FDocumentStatus" && rec.status) val = rec.status;
+          return val;
+        });
+        rows.push(row);
+        if (top && rows.length >= top) break;
+      }
+      return rows;
+    },
+    [SVC.PUSH]: (body) => {
+      const b = body || {};
+      const formId = b.formid || "";
+      const data = parseData(b);
+      const target = data.TargetFormId || TARGET_FORM;
+      const bid = nextId();
+      const number = nextNo(target);
+      if (!bills[target]) bills[target] = {};
+      bills[target][bid] = {
+        model: { Id: bid, FBillNo: number, SourceFormId: formId },
+        status: "A", number: number,
+      };
+      return okResult("下推成功", bid, number);
+    },
+    [RESET_SVC]: () => {
+      bills = {};
+      seedDemoBills();
+      return { Message: "演示数据已重置" };
+    },
+  };
+  async function call(service, body) {
+    const handler = HANDLERS[service];
+    if (!handler) return failResult("离线内存模拟未实现的端点：" + service);
+    // 轻微延迟，使 loading 态可见并贴近真实往返节奏
+    await new Promise((r) => setTimeout(r, 90 + Math.floor(Math.random() * 60)));
+    return handler(body || {});
+  }
+  return { call };
+})();
+
+/* ============================================================
+ * ⑤ 传输层：离线内存（默认，单文件自包含）/ 在线 HTTP（可选，打到 mock_server）
+ *    在线模式连接失败时自动回退离线并给出可重试提示。
+ * ============================================================ */
+const transport = (() => {
+  let mode = "offline";
+  let fallback = false;
+  let base = DEFAULT_ONLINE_BASE;
+  let timeoutMs = 6000;
+  const listeners = new Set();
+  function notify() { listeners.forEach((fn) => fn()); }
+  return {
+    get mode() { return mode; },
+    get fallback() { return fallback; },
+    get base() { return base; },
+    get timeoutMs() { return timeoutMs; },
+    setBase(next) { const v = String(next || "").trim(); if (v) { base = v.replace(/\/+$/, ""); notify(); } },
+    setMode(next) {
+      const want = next === "live" ? "live" : "offline";
+      if (want === mode) return;
+      mode = want;
+      if (mode === "offline") fallback = false;
+      notify();
+    },
+    markFallback() { mode = "offline"; fallback = true; notify(); },
+    clearFallback() { fallback = false; notify(); },
+    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+  };
+})();
+
+/* ============================================================
+ * ⑥ 协议调用日志：记录每次 .kdsvc 调用的端点/请求体/响应体/耗时/来源/结果
+ * ============================================================ */
+const protoLog = (() => {
+  const items = [];
+  const listeners = new Set();
+  let seq = 0;
+  function notify() { listeners.forEach((fn) => fn()); }
+  return {
+    push(entry) {
+      seq += 1;
+      const rec = Object.assign({ key: seq, seq: seq }, entry);
+      items.unshift(rec);
+      if (items.length > 120) items.length = 120;
+      notify();
+    },
+    clear() { items.length = 0; notify(); },
+    snapshot() { return items.slice(); },
+    subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+  };
+})();
+
+async function liveCall(service, body) {
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), transport.timeoutMs) : null;
+  try {
+    const res = await fetch(transport.base + "/" + service, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {}),
+      signal: controller ? controller.signal : undefined,
+    });
+    const text = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(text); } catch (e) { parsed = null; }
+    if (parsed === null) {
+      return { Result: { ResponseStatus: { IsSuccess: false, Errors: [{ Message: "响应不是合法 JSON" }], Msg: "响应不是合法 JSON" } }, __raw: text.slice(0, 400), __status: res.status };
+    }
+    if (!res.ok) {
+      return { Result: { ResponseStatus: { IsSuccess: false, Errors: [{ Message: "HTTP " + res.status }], Msg: JSON.stringify(parsed).slice(0, 200) } }, __status: res.status };
+    }
+    return parsed;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+function judgeResponse(service, response) {
+  if (Array.isArray(response)) return { ok: true, message: response.length + " 行" };
+  if (service === SVC.VALIDATE) {
+    const ok = !!(response && response.LoginResultType === 1);
+    return { ok: ok, message: (response && response.Message) || "" };
+  }
+  if (service === RESET_SVC) return { ok: true, message: (response && response.Message) || "已重置" };
+  const rs = response && response.Result && response.Result.ResponseStatus;
+  if (!rs) return { ok: false, message: "响应结构异常" };
+  return { ok: !!rs.IsSuccess, message: rs.Msg || "" };
+}
+
+async function kdsvc(service, body) {
+  const started = Date.now();
+  const payload = body || {};
+  let source = transport.mode;
+  let response = null;
+  let fallbackError = "";
+  if (transport.mode === "live") {
+    try {
+      response = await liveCall(service, payload);
+      source = "live";
+    } catch (e) {
+      fallbackError = String((e && e.message) || e);
+      transport.markFallback();
+      response = await offlineMock.call(service, payload);
+      source = "offline(fallback)";
+    }
+  } else {
+    response = await offlineMock.call(service, payload);
+    source = "offline";
+  }
+  const judged = judgeResponse(service, response);
+  protoLog.push({
+    time: nowStamp(),
+    source: source,
+    action: shortAction(service),
+    endpoint: service,
+    formid: payload.formid || (payload.data && payload.data.FormId) || "—",
+    request: clipText(payload, 1600),
+    response: clipText(response, 2200),
+    ms: Date.now() - started,
+    ok: judged.ok,
+    msg: fallbackError ? fallbackError + "（已回退离线）" : judged.message,
+  });
+  return response;
+}
+
+/* ============================================================
+ * ⑦ 表单查询字段（与页面表格列对应）
+ * ============================================================ */
+const FORM_QUERY = {
+  PUR_PurchaseOrder: {
+    FieldKeys: "Id,FBillNo,FDate,FSupplierId.FNumber,FSupplierId.FName,FPurchaseOrgId.FNumber,FPurchaseOrgId.FName,FDocumentStatus,FCreatorName",
+    Columns: ["Id", "FBillNo", "FDate", "FSupplierId.FNumber", "FSupplierId.FName", "FPurchaseOrgId.FNumber", "FPurchaseOrgId.FName", "FDocumentStatus", "FCreatorName"],
+  },
+  SKY_ExpReimburse: {
+    FieldKeys: "Id,FBillNo,FStaffId.FNumber,FStaffId.FName,FDepartmentId.FNumber,FDepartmentId.FName,FTravelDate,FReason,FAmount,FDocumentStatus,FCreatorName",
+    Columns: ["Id", "FBillNo", "FStaffId.FNumber", "FStaffId.FName", "FDepartmentId.FNumber", "FDepartmentId.FName", "FTravelDate", "FReason", "FAmount", "FDocumentStatus", "FCreatorName"],
+  },
+  STK_InStock: {
+    FieldKeys: "Id,FBillNo,SourceFormId,FDocumentStatus",
+    Columns: ["Id", "FBillNo", "SourceFormId", "FDocumentStatus"],
+  },
+};
+
+function setDotted(model, path, value) {
+  const parts = String(path).split(".");
+  let node = model;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const p = parts[i];
+    if (!node[p] || typeof node[p] !== "object") node[p] = {};
+    node = node[p];
+  }
+  node[parts[parts.length - 1]] = value;
+  return model;
+}
+
+const store = (() => {
+  let bills = {};
+  const listeners = new Set();
+  function notify() { listeners.forEach((fn) => fn(bills)); }
+  function snapshot() { return JSON.parse(JSON.stringify(bills)); }
+  function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+  async function reload(formId) {
+    const cfg = FORM_QUERY[formId];
+    if (!cfg) return { ok: false, error: "未定义的查询表单：" + formId };
+    const rows = await kdsvc(SVC.QUERY, {
+      formid: formId,
+      data: JSON.stringify({ FormId: formId, FieldKeys: cfg.FieldKeys, TopRowCount: 100 }),
+    });
+    if (!Array.isArray(rows)) {
+      const rs = rows && rows.Result && rows.Result.ResponseStatus;
+      return { ok: false, error: (rs && (rs.Msg || (rs.Errors && rs.Errors[0] && rs.Errors[0].Message))) || "查询失败" };
+    }
+    const next = {};
+    rows.forEach((row) => {
+      const model = {};
+      cfg.Columns.forEach((col, i) => setDotted(model, col, row[i]));
+      const id = model.Id;
+      if (id == null || id === "") return;
+      next[id] = { model: model, status: model.FDocumentStatus || "A", number: model.FBillNo || ("#" + id) };
+    });
+    bills[formId] = next;
+    notify();
+    return { ok: true, error: "" };
+  }
+  async function reloadAll() {
+    const out = {};
+    const keys = Object.keys(FORM_QUERY);
+    for (let i = 0; i < keys.length; i++) out[keys[i]] = await reload(keys[i]);
+    return out;
+  }
+  async function call(service, body) {
+    const formId = (body && body.formid) || "";
+    const response = await kdsvc(service, body);
+    if (formId && FORM_QUERY[formId] && service !== SVC.VALIDATE) {
+      await reload(formId);
+      if (service === SVC.PUSH) await reload(TARGET_FORM);
+    }
+    return { endpoint: service, response: response };
+  }
+  async function resetDemo() {
+    const res = await kdsvc(RESET_SVC, {});
+    await reloadAll();
+    return res;
+  }
+  function clear() { bills = {}; notify(); }
+  return { snapshot, subscribe, reload, reloadAll, call, resetDemo, clear };
+})();
+
+/* ============================================================
+ * ⑧ 部署自检（模拟 --selfcheck 文本 / JSON 输出）
+ * ============================================================ */
+function buildSelfcheck(opts) {
+  const allowInsecureHttp = opts.allowInsecureHttp;
+  const secretSource = opts.secretSource;
+  const online = opts.mode === "live";
+  const probe = opts.probe || null;
+  let connectivity;
+  if (online) {
+    connectivity = probe
+      ? { pass: !!probe.ok, detail: probe.detail + "（探测于 " + probe.at + "）" }
+      : { pass: false, detail: "尚未探测：请点击『探测服务连通性』确认 " + transport.base + " 可达" };
+  } else {
+    connectivity = { pass: true, detail: "离线内存模拟：内置 ValidateUser 与动态表单端点，无需外部服务" };
+  }
+  const checks = [
+    { name: "配置文件可解析", pass: true, detail: "App.config 存在且 XML 合法" },
+    { name: "WebAPI 服务地址已配置", pass: true, detail: online ? transport.base + "（在线 mock_server）" : "离线演示模式：使用内置端点" },
+    { name: "账号信息完整", pass: true, detail: "UserName/Password 或 AppID/AppSec 已配置" },
+    { name: "密钥源(" + secretSource + ")可用", pass: true, detail: "密钥读取与解密正常" },
+    { name: "传输安全策略（强制 HTTPS）", pass: !allowInsecureHttp, detail: allowInsecureHttp ? "AllowInsecureHttp=true，明文 HTTP 放行，存在降级风险" : "AllowInsecureHttp=false，仅允许 HTTPS" },
+    { name: "模拟服务连通性", pass: connectivity.pass, detail: connectivity.detail },
+  ];
+  const ready = checks.every((c) => c.pass);
+  return { ready: ready, exitCode: ready ? 0 : 1, checks: checks };
+}
+function selfcheckText(sc) {
+  const lines = [];
+  lines.push("KingdeeSky.WebApiClient SelfCheck");
+  lines.push("--------------------------------");
+  sc.checks.forEach((c) => {
+    lines.push((c.pass ? "[PASS]" : "[FAIL]") + " " + c.name + " - " + c.detail);
+  });
+  lines.push("--------------------------------");
+  lines.push("自检" + (sc.ready ? "通过" : "未通过") + "，ExitCode=" + sc.exitCode);
+  return lines.join("\n");
+}
+function selfcheckJson(sc) {
+  return JSON.stringify(
+    {
+      ok: sc.ready,
+      exitCode: sc.exitCode,
+      checks: sc.checks.map((c) => ({ name: c.name, pass: c.pass, detail: c.detail })),
+    },
+    null,
+    2
+  );
+}
+
+/* ============================================================
+ * ⑨ 通用展示组件
+ * ============================================================ */
+function StatusTag({ status }) {
+  const map = { A: ["default", "草稿"], B: ["processing", "已提交"], C: ["success", "已审核"] };
+  const pair = map[status] || ["default", status];
+  return <Tag color={pair[0]}>{pair[1]}</Tag>;
+}
+
+function SourceTag({ source }) {
+  const color = source === "live" ? "blue" : source === "offline" ? "default" : "orange";
+  return <Tag color={color}>{SOURCE_LABEL[source] || source}</Tag>;
+}
+
+function useDataMode() {
+  const [, force] = useState(0);
+  useEffect(() => transport.subscribe(() => force((v) => v + 1)), []);
+  return { mode: transport.mode, fallback: transport.fallback, base: transport.base };
+}
+
+function useProtoLog() {
+  const [, force] = useState(0);
+  useEffect(() => protoLog.subscribe(() => force((v) => v + 1)), []);
+  return protoLog.snapshot();
+}
+
+/* 协议调用日志抽屉：每次 kdsvc 调用的端点/请求体/响应体/耗时/来源/结果 */
+function ProtocolLogDrawer({ open, onClose }) {
+  const logs = useProtoLog();
+  const [filter, setFilter] = useState("all");
+  const [expanded, setExpanded] = useState([]);
+  const shown = logs.filter((l) => filter === "all" || (filter === "ok" ? l.ok : !l.ok));
+  const columns = [
+    { title: "#", dataIndex: "seq", key: "seq", width: 56 },
+    { title: "时间", dataIndex: "time", key: "time", width: 108 },
+    { title: "来源", dataIndex: "source", key: "source", width: 140, render: (v) => <SourceTag source={v} /> },
+    { title: "动作", dataIndex: "action", key: "action", width: 132 },
+    { title: "端点", dataIndex: "endpoint", key: "endpoint", ellipsis: true, render: (v) => <Tooltip title={v}><Text code style={{ fontSize: 11 }}>{v}</Text></Tooltip> },
+    { title: "耗时", dataIndex: "ms", key: "ms", width: 78, render: (v) => v + "ms" },
+    { title: "结果", dataIndex: "ok", key: "ok", width: 158, render: (v, r) => (
+      <Space size={4}>
+        <Tag color={v ? "success" : "error"}>{v ? "成功" : "失败"}</Tag>
+        <Text type="secondary" style={{ fontSize: 11 }} ellipsis={{ tooltip: r.msg }}>{r.msg}</Text>
+      </Space>
+    ) },
+  ];
+  return (
+    <Drawer
+      title="协议调用日志"
+      open={open}
+      onClose={onClose}
+      width={880}
+      extra={<Tag>{logs.length} 条</Tag>}
+    >
+      <Paragraph type="secondary" style={{ marginBottom: 12 }}>
+        记录浏览器 → 金蝶 WebAPI（<Text code>.kdsvc</Text>）的每次调用：端点、请求体、响应体、耗时与数据来源，
+        用于验证「操作台动作 == 一次真实 WebApiClient 协议调用」。
+      </Paragraph>
+      <div className="app-toolbar">
+        <Segmented
+          value={filter}
+          onChange={setFilter}
+          options={[{ value: "all", label: "全部" }, { value: "ok", label: "成功" }, { value: "fail", label: "失败" }]}
+        />
+        <Button icon={<HistoryOutlined />} onClick={() => setExpanded(shown.map((l) => l.key))}>展开全部</Button>
+        <Popconfirm title="清空协议日志？" onConfirm={() => { protoLog.clear(); setExpanded([]); }}>
+          <Button icon={<ClearOutlined />} disabled={logs.length === 0}>清空</Button>
+        </Popconfirm>
+      </div>
+      <Table
+        rowKey="key"
+        size="small"
+        columns={columns}
+        dataSource={shown}
+        pagination={{ pageSize: 20, size: "small", showTotal: (t) => "共 " + t + " 条" }}
+        scroll={{ x: 760 }}
+        expandedRowKeys={expanded}
+        onExpandedRowsChange={(keys) => setExpanded(keys)}
+        expandable={{
+          expandedRowRender: (r) => (
+            <div>
+              <div className="proto-label">请求体（POST {"{"}formid, data{"}"}）</div>
+              <pre className="proto-json">{r.request || "{}"}</pre>
+              <div className="proto-label">响应体</div>
+              <pre className="proto-json">{r.response || "{}"}</pre>
+            </div>
+          ),
+        }}
+        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="尚无调用记录，操作任一页面即可产生" /> }}
+      />
+    </Drawer>
+  );
+}
+
+/* 数据源切换：离线（默认，单文件自包含）/ 在线（真实 HTTP 到 mock_server） */
+function DataSourceButton() {
+  const { mode, fallback, base } = useDataMode();
+  const { message: msg } = KitApp.useApp();
+  const [testing, setTesting] = useState(false);
+  const [probe, setProbe] = useState(null);
+
+  async function testConnection() {
+    setTesting(true);
+    const before = transport.mode;
+    transport.setMode("live");
+    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: MOCK_PASSWORD, lcid: 2052 });
+    const ok = !!(res && res.LoginResultType === 1);
+    setProbe({ ok: ok, at: nowStamp(), detail: ok ? "ValidateUser 返回 LoginResultType=1" : "服务响应异常或不可达" });
+    if (!ok) transport.setMode(before);
+    setTesting(false);
+    msg[ok ? "success" : "error"](ok ? "在线服务连通成功" : "在线服务不可达，已回退离线内存模拟");
+  }
+
+  const content = (
+    <div style={{ width: 320 }}>
+      <Space direction="vertical" size={10} style={{ width: "100%" }}>
+        <div>
+          <Text strong>数据来源</Text>
+          <div style={{ marginTop: 6 }}>
+            <Space>
+              <Switch
+                data-od-id="data-source-switch"
+                checked={mode === "live"}
+                checkedChildren="在线"
+                unCheckedChildren="离线"
+                onChange={(v) => { transport.setMode(v ? "live" : "offline"); msg.info(v ? "已切换到在线 mock_server" : "已切换到离线内存模拟"); }}
+              />
+              <SourceTag source={mode} />
+            </Space>
+          </div>
+        </div>
+        <div>
+          <Text strong style={{ fontSize: 12 }}>服务地址（在线模式）</Text>
+          <Input
+            data-od-id="data-source-base"
+            size="small"
+            style={{ marginTop: 6 }}
+            defaultValue={base}
+            onChange={(e) => transport.setBase(e.target.value)}
+            onBlur={(e) => transport.setBase(e.target.value)}
+          />
+        </div>
+        <Space>
+          <Button size="small" icon={<SyncOutlined />} loading={testing} onClick={testConnection}>测试连接</Button>
+          {probe && <Text type={probe.ok ? "success" : "danger"} style={{ fontSize: 12 }}>{probe.detail}</Text>}
+        </Space>
+        {fallback && <Alert type="warning" showIcon message="在线连接失败，已自动回退离线内存模拟" />}
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          离线：单文件自带内存数据层，双击即可演示，无任何网络请求。
+          在线：通过真实 HTTP 打到本机 <Text code>perf/mock_server.py</Text>（默认 18080），验证协议闭环。
+        </Text>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          已记录调用 {protoLogRef()} 次
+        </Text>
+      </Space>
+    </div>
+  );
+
+  return (
+    <Popover content={content} trigger="click" placement="bottomRight">
+      <Button data-od-id="data-source-btn" icon={<DatabaseOutlined />}>{SOURCE_LABEL[mode] || mode}</Button>
+    </Popover>
+  );
+}
+function protoLogRef() { return protoLog.snapshot().length; }
+
+/* ============================================================
+ * ⑩ 页面组件：操作台总览（dashboard）
+ * ============================================================ */
+// 演示路径步骤定义：不预设 icon，由 current 驱动状态，
+// 仅已完成步骤补对勾，避免“未运行也显示已完成”的自相矛盾。
+const STEP_DEFS = [
+  { title: "部署自检", description: "文本 / JSON 输出与退出码" },
+  { title: "登录鉴权", description: "密码或 AppID+AppSec" },
+  { title: "采购订单", description: "查询 / 建单 / 提交 / 审核 / 下推" },
+  { title: "自定义单据", description: "差旅费报销单 SKY_ExpReimburse" },
+  { title: "传输安全", description: "强制 HTTPS 与显式放行" },
+];
+function OverviewPage({ onNavigate, appState, bills, lastError }) {
+  const { message: msg } = KitApp.useApp();
+  const [resetting, setResetting] = useState(false);
+  const allOrders = Object.keys((bills.PUR_PurchaseOrder || {}))
+    .map((bid) => bills.PUR_PurchaseOrder[bid])
+    .sort((a, b) => b.model.Id - a.model.Id);
+  const docs = Object.keys((bills.SKY_ExpReimburse || {})).map((bid) => bills.SKY_ExpReimburse[bid]);
+  const downstream = Object.keys((bills.STK_InStock || {})).map((bid) => bills.STK_InStock[bid]);
+  const logs = protoLog.snapshot();
+  const columns = [
+    { title: "单号", dataIndex: "number", key: "number" },
+    { title: "日期", dataIndex: ["model", "FDate"], key: "fdate" },
+    { title: "供应商", dataIndex: ["model", "FSupplierId", "FName"], key: "supplier" },
+    { title: "采购组织", dataIndex: ["model", "FPurchaseOrgId", "FName"], key: "org" },
+    { title: "状态", dataIndex: "status", key: "status", render: (v) => <StatusTag status={v} /> },
+  ];
+  const rows = allOrders.map((o) => Object.assign({ key: o.model.Id }, o));
+  const stepCurrent = appState.purchaseFlowDone ? 4 : appState.loggedIn ? 2 : appState.selfcheckReady ? 1 : 0;
+  const flowPercent = [0, 25, 50, 75, 100][stepCurrent];
+  return (
+    <div style={{ maxWidth: 1200 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        以可视化方式演示 KingdeeSky.WebApiClient 客户端能力：部署自检、登录鉴权、采购订单全流程（含下推）、
+        自定义单据与传输安全策略；每次操作都会在「协议调用日志」中留下可核对的 .kdsvc 调用记录。
+      </Paragraph>
+      {lastError ? (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message="最近一次数据查询失败"
+          description={lastError + "（可在「数据源」中检查服务地址，或使用离线内存模拟）"}
+        />
+      ) : null}
+      <div className="app-stat-grid">
+        <Card size="small"><Statistic title="自检状态" value={!appState.selfcheckOutput ? "未运行" : appState.selfcheckOutput.ready ? "就绪" : "未通过 · ExitCode=" + appState.selfcheckOutput.exitCode} valueStyle={{ fontSize: 18, color: !appState.selfcheckOutput ? "#8c8c8c" : appState.selfcheckOutput.ready ? "#16a34a" : "#d97706" }} prefix={!appState.selfcheckOutput ? null : appState.selfcheckOutput.ready ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />} /></Card>
+        <Card size="small"><Statistic title="登录会话" value={appState.loggedIn ? appState.user : "未登录"} valueStyle={{ fontSize: 18 }} prefix={appState.loggedIn ? <CheckOutlined /> : <LockOutlined />} /></Card>
+        <Card size="small"><Statistic title="采购订单（张）" value={allOrders.length} valueStyle={{ fontSize: 18 }} prefix={<ShoppingCartOutlined />} /></Card>
+        <Card size="small"><Statistic title="自定义单据 / 下游单据" value={docs.length + " / " + downstream.length} valueStyle={{ fontSize: 18 }} prefix={<FileAddOutlined />} /></Card>
+        <Card size="small"><Statistic title="协议调用（次）" value={logs.length} valueStyle={{ fontSize: 18 }} prefix={<ApiOutlined />} /></Card>
+        <Card size="small"><Statistic title="传输安全策略" value={appState.allowInsecureHttp ? "明文 HTTP 放行" : "强制 HTTPS"} valueStyle={{ fontSize: 18, color: appState.allowInsecureHttp ? "#d97706" : "#16a34a" }} prefix={<SafetyOutlined />} /></Card>
+      </div>
+      <Card title="完整演示路径" className="app-section">
+        <Steps
+          current={stepCurrent}
+          style={{ maxWidth: 960 }}
+          items={STEP_DEFS.map((s, i) => (i < stepCurrent ? Object.assign({}, s, { icon: <CheckCircleOutlined /> }) : s))}
+        />
+        <Progress percent={flowPercent} size="small" style={{ marginTop: 12, maxWidth: 960 }} />
+        <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 12 }}>
+          <Button type="primary" icon={<CheckCircleOutlined />} onClick={() => onNavigate("/selfcheck")}>开始自检</Button>
+          <Button icon={<LoginOutlined />} onClick={() => onNavigate("/auth")}>配置登录</Button>
+          <Button icon={<ShoppingCartOutlined />} onClick={() => onNavigate("/purchase")}>采购订单演示</Button>
+          <Button icon={<FileAddOutlined />} onClick={() => onNavigate("/custom-doc")}>新建自定义单据</Button>
+          <Button icon={<SafetyOutlined />} onClick={() => onNavigate("/security")}>传输安全策略</Button>
+          <Button
+            icon={<ReloadOutlined />}
+            loading={resetting}
+            onClick={async () => { setResetting(true); await store.resetDemo(); setResetting(false); msg.success("演示数据已重置（3 张采购订单）"); }}
+          >重置演示数据</Button>
+        </div>
+      </Card>
+      <Card title="最近采购订单" extra={<Button type="link" onClick={() => onNavigate("/purchase")}>进入采购订单<ArrowRightOutlined /></Button>}>
+        <p className="sr-only">采购订单列表：包含单号、日期、供应商、采购组织与单据状态。</p>
+        <Table
+          rowKey="key"
+          columns={columns}
+          dataSource={rows}
+          pagination={false}
+          size="middle"
+          scroll={{ x: 720 }}
+          locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无采购订单，可进入采购订单页新建或重置演示数据" /> }}
+        />
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑪ 部署自检
+ * ============================================================ */
+function SelfcheckPage({ appState, setAppState }) {
+  const { message: msg } = KitApp.useApp();
+  const { mode } = useDataMode();
+  const [outputMode, setOutputMode] = useState("text");
+  const [running, setRunning] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [secretSource, setSecretSource] = useState("env");
+  const [probe, setProbe] = useState(null);
+  const [probing, setProbing] = useState(false);
+
+  function compute() {
+    return buildSelfcheck({
+      allowInsecureHttp: appState.allowInsecureHttp,
+      secretSource: secretSource,
+      mode: transport.mode,
+      probe: probe,
+    });
+  }
+  function runSelfcheck() {
+    setRunning(true);
+    setTimeout(() => {
+      const result = compute();
+      setAppState({ selfcheckReady: result.ready, selfcheckOutput: result });
+      setChecked(true);
+      setRunning(false);
+    }, 400);
+  }
+  async function probeConnectivity() {
+    setProbing(true);
+    const wasOffline = transport.mode === "offline";
+    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: MOCK_PASSWORD, lcid: 2052 });
+    const ok = !!(res && res.LoginResultType === 1);
+    const detail = wasOffline
+      ? "离线内存模拟：本地实现 ValidateUser，未发起网络请求"
+      : "HTTP " + transport.base + " → LoginResultType=" + (res ? res.LoginResultType : "无响应");
+    setProbe({ ok: ok, detail: detail, at: nowStamp() });
+    setProbing(false);
+    msg[ok ? "success" : "error"](ok ? "连通性探测通过" : "连通性探测失败，请检查服务地址");
+  }
+  const sc = compute();
+  const textOutput = checked ? (outputMode === "text" ? selfcheckText(sc) : selfcheckJson(sc)) : "（请点击『运行部署自检』）";
+  return (
+    <div style={{ maxWidth: 1000 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        模拟客户端 <Text code>KingdeeSky.WebApiClient.exe --selfcheck [--json]</Text> 的行为：逐项检查配置、密钥来源、
+        传输安全与服务连通性，退出码 0=就绪 / 1=未就绪。当前数据来源：<SourceTag source={mode} />。
+      </Paragraph>
+      <Card className="app-section">
+        <div className="app-toolbar">
+          <Select
+            value={secretSource}
+            style={{ width: 200 }}
+            options={[
+              { value: "env", label: "密钥来源：env（环境变量）" },
+              { value: "file", label: "密钥来源：file（配置文件）" },
+              { value: "dpapi", label: "密钥来源：dpapi（DPAPI 保护）" },
+              { value: "kms", label: "密钥来源：kms（KMS）" },
+            ]}
+            onChange={setSecretSource}
+          />
+          <Button icon={<CheckCircleOutlined />} type="primary" loading={running} onClick={runSelfcheck}>运行部署自检</Button>
+          <Button icon={<ApiOutlined />} loading={probing} onClick={probeConnectivity}>探测服务连通性</Button>
+          <Segmented
+            value={outputMode}
+            onChange={setOutputMode}
+            options={[
+              { value: "text", label: "文本输出" },
+              { value: "json", label: "JSON 输出" },
+            ]}
+          />
+          {checked && (
+            <Tag color={sc.exitCode === 0 ? "success" : "error"}>
+              {sc.ready ? "自检通过" : "自检未通过"} · ExitCode={sc.exitCode}
+            </Tag>
+          )}
+        </div>
+        {checked && sc.exitCode !== 0 && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message="部署未就绪"
+            description="存在失败检查项，请按输出修正后再启动客户端。演示中传输安全策略为显式放行明文 HTTP 时自检不通过；恢复『强制 HTTPS』即通过。"
+          />
+        )}
+        <pre className="app-code">{textOutput}</pre>
+      </Card>
+      <Card title="检查项说明" size="small">
+        <Space direction="vertical" size={4}>
+          <Text className="app-hint">· <Text strong>传输安全</Text>：出厂默认应关闭 AllowInsecureHttp（强制 HTTPS）；显式放行仅为演示降级场景。</Text>
+          <Text className="app-hint">· <Text strong>密钥来源</Text>：env / file / dpapi / kms 四选一，切换后自检结果随来源刷新。</Text>
+          <Text className="app-hint">· <Text strong>服务连通性</Text>：离线模式由内置数据层作答；在线模式需先「探测服务连通性」确认 mock_server 可达。</Text>
+          <Text className="app-hint">· <Text strong>退出码</Text>：0=就绪可启动，1=未就绪（本操作台为单文件演示，离线数据层与 mock_server 行为一致）。</Text>
+        </Space>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑫ 登录鉴权
+ * ============================================================ */
+function AuthPage({ appState, setAppState }) {
+  const [mode, setMode] = useState("password");
+  const [secretSource, setSecretSource] = useState("env");
+  const [username, setUsername] = useState("Administrator");
+  const [password, setPassword] = useState("demo123");
+  const [appId, setAppId] = useState("SKY_OPEN_API_APP");
+  const [appSec, setAppSec] = useState("demo-secret-key");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { message: msg } = KitApp.useApp();
+
+  async function doLogin() {
+    setLoading(true);
+    setResult(null);
+    setError("");
+    let login = null;
+    try {
+      if (mode === "password") {
+        login = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: username, password: password, lcid: 2052 });
+      } else {
+        const ok = String(appId).trim() !== "" && String(appSec).trim().length >= 6;
+        login = ok
+          ? { LoginResultType: 1, Message: "AppID+AppSec 认证成功（骨架，未联调真实 OpenAPI）" }
+          : { LoginResultType: 0, Message: "AppID 或 AppSec 错误" };
+      }
+    } catch (e) {
+      setError(String((e && e.message) || e));
+      setLoading(false);
+      return;
+    }
+    const isSuccess = !!(login && login.LoginResultType === 1);
+    const endpoint = mode === "password" ? SVC.VALIDATE : "OpenAPI.AuthByAppSecret";
+    setAppState({ loggedIn: isSuccess, user: isSuccess ? (mode === "password" ? username : appId) : "" });
+    setResult({ endpoint: endpoint, success: isSuccess, message: (login && login.Message) || "" });
+    setLoading(false);
+    msg[isSuccess ? "success" : "error"]((login && login.Message) || "登录失败");
+  }
+  const secretNote = secretSource === "env" ? "AppSec 来自环境变量" : secretSource === "file" ? "AppSec 来自配置文件" : secretSource === "dpapi" ? "AppSec 存于 DPAPI 受保护区块" : "AppSec 由 KMS 分发";
+  return (
+    <div style={{ maxWidth: 1000 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        支持密码模式与 AppID+AppSec 模式；密钥来源支持 env / file / dpapi / kms，密钥只在内存中使用，不会写入任何存储。
+      </Paragraph>
+      <Card className="app-section">
+        <div className="app-toolbar">
+          <Segmented
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "password", label: "密码模式" },
+              { value: "appsec", label: "AppID+AppSec 模式" },
+            ]}
+          />
+          <Select
+            value={secretSource}
+            style={{ width: 220 }}
+            options={[
+              { value: "env", label: "密钥来源：env（环境变量）" },
+              { value: "file", label: "密钥来源：file（配置文件）" },
+              { value: "dpapi", label: "密钥来源：dpapi（DPAPI 保护）" },
+              { value: "kms", label: "密钥来源：kms（KMS）" },
+            ]}
+            onChange={setSecretSource}
+          />
+        </div>
+        <Space direction="vertical" style={{ width: "100%", maxWidth: 480 }} size={12}>
+          {mode === "password" ? (
+            <React.Fragment>
+              <div>
+                <Text strong>用户名</Text>
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Administrator" prefix={<KeyOutlined />} style={{ marginTop: 4 }} />
+              </div>
+              <div>
+                <Text strong>密码</Text>
+                <Input.Password value={password} onChange={(e) => setPassword(e.target.value)} placeholder="demo123" prefix={<LockOutlined />} style={{ marginTop: 4 }} />
+              </div>
+              <Text type="secondary">模拟账号：Administrator / demo123（与 mock_server.py 一致）</Text>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div>
+                <Text strong>AppID</Text>
+                <Input value={appId} onChange={(e) => setAppId(e.target.value)} placeholder="应用标识" prefix={<CloudServerOutlined />} style={{ marginTop: 4 }} />
+              </div>
+              <div>
+                <Text strong>AppSec（应用密钥）</Text>
+                <Input.Password value={appSec} onChange={(e) => setAppSec(e.target.value)} placeholder="至少 6 位" prefix={<SafetyCertificateOutlined />} style={{ marginTop: 4 }} />
+              </div>
+              <Text type="secondary">{secretNote}</Text>
+            </React.Fragment>
+          )}
+          <Button type="primary" icon={<LoginOutlined />} loading={loading} onClick={doLogin} style={{ width: 160 }}>登录</Button>
+        </Space>
+        {error ? <Alert style={{ marginTop: 16 }} type="error" showIcon message="登录请求异常" description={error} /> : null}
+        {result && (
+          <Alert
+            style={{ marginTop: 16 }}
+            type={result.success ? "success" : "error"}
+            showIcon
+            message={result.success ? "登录成功" : "登录失败"}
+            description={
+              <Space direction="vertical" size={4}>
+                <Text code>{result.endpoint}</Text>
+                <Text>{result.message}</Text>
+                <Text type="secondary">已下发会话 Cookie（演示环境以内存态模拟，不读取浏览器存储）。</Text>
+              </Space>
+            }
+          />
+        )}
+      </Card>
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Card size="small" style={{ flex: "1 1 320px" }}>
+          <Space direction="vertical" size={4}>
+            <Text strong><LockOutlined /> 安全要点</Text>
+            <Text className="app-hint">· 密钥一律不落盘，生产建议 env 或 KMS 托管</Text>
+            <Text className="app-hint">· 传输层强制 HTTPS，避免明文泄露</Text>
+            <Text className="app-hint">· DPAPI 仅适用于 Windows 本机保护</Text>
+          </Space>
+        </Card>
+        <Card size="small" style={{ flex: "1 1 320px" }}>
+          <Space direction="vertical" size={4}>
+            <Text strong><KeyOutlined /> 当前会话</Text>
+            <Text className="app-hint">登录状态：{appState.loggedIn ? <Tag color="success">已登录 · {appState.user}</Tag> : <Tag>未登录</Tag>}</Text>
+            <Text className="app-hint">密钥来源：{secretSource}</Text>
+          </Space>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑬ 采购订单：查询 / 筛选 / 批量 / 建单 / 查看(View) / 下推(Push)
+ * ============================================================ */
+function PurchasePage({ appState, onState }) {
+  const { message: msg } = KitApp.useApp();
+  const [tick, setTick] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [keyword, setKeyword] = useState("");
+  const [selected, setSelected] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [detail, setDetail] = useState({ open: false, loading: false, id: null, number: "", model: null, error: "" });
+  const [pushResult, setPushResult] = useState(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    store.reload("PUR_PurchaseOrder");
+    store.reload(TARGET_FORM);
+    const un = store.subscribe(() => setTick((v) => v + 1));
+    return un;
+  }, []);
+
+  const bills = useMemo(() => store.snapshot(), [tick]);
+  const allOrders = Object.keys((bills.PUR_PurchaseOrder || {}))
+    .map((bid) => Object.assign({ key: Number(bid) }, bills.PUR_PurchaseOrder[bid]))
+    .sort((a, b) => b.model.Id - a.model.Id);
+  const downstream = Object.keys((bills.STK_InStock || {}))
+    .map((bid) => Object.assign({ key: Number(bid) }, bills.STK_InStock[bid]))
+    .sort((a, b) => b.model.Id - a.model.Id);
+  const kw = keyword.trim().toLowerCase();
+  const orders = allOrders.filter((o) => {
+    if (statusFilter !== "all" && o.status !== statusFilter) return false;
+    if (!kw) return true;
+    const sup = (o.model.FSupplierId && o.model.FSupplierId.FName) || "";
+    const supNo = (o.model.FSupplierId && o.model.FSupplierId.FNumber) || "";
+    const org = (o.model.FPurchaseOrgId && o.model.FPurchaseOrgId.FName) || "";
+    return (o.number + " " + sup + " " + supNo + " " + org).toLowerCase().indexOf(kw) >= 0;
+  });
+
+  async function refresh() {
+    setLoading(true);
+    const res = await store.reload("PUR_PurchaseOrder");
+    if (TARGET_FORM) await store.reload(TARGET_FORM);
+    setLoading(false);
+    setError(res.ok ? "" : res.error);
+    if (res.ok) msg.success("已刷新查询（ExecuteBillQuery）");
+    else msg.error("查询失败：" + res.error);
+  }
+  async function runFlow(action) {
+    const service = SERVICE_BY_ACTION[action.action] || SVC.UNAUDIT;
+    const res = await store.call(service, { formid: "PUR_PurchaseOrder", data: JSON.stringify({ Ids: [action.id] }) });
+    const rs = res.response && res.response.Result && res.response.Result.ResponseStatus;
+    const ok = !!(rs && rs.IsSuccess);
+    msg[ok ? "success" : "error"]((rs && rs.Msg) || "操作失败");
+  }
+  async function runBatch(action) {
+    if (!selected.length) { msg.warning("请先勾选单据"); return; }
+    const rows = allOrders.filter((o) => selected.indexOf(o.key) >= 0);
+    const service = action === "submit" ? SVC.SUBMIT : action === "audit" ? SVC.AUDIT : action === "unaudit" ? SVC.UNAUDIT : SVC.DELETE;
+    const eligible = rows.filter((o) => (action === "submit" ? o.status === "A" : action === "audit" ? o.status === "B" : action === "unaudit" ? o.status === "C" : o.status !== "C"));
+    if (!eligible.length) { msg.warning("所选单据中没有可" + (action === "submit" ? "提交" : action === "audit" ? "审核" : action === "unaudit" ? "反审核" : "删除") + "的记录"); return; }
+    setBusy(true);
+    const res = await store.call(service, { formid: "PUR_PurchaseOrder", data: JSON.stringify({ Ids: eligible.map((o) => o.key) }) });
+    const rs = res.response && res.response.Result && res.response.Result.ResponseStatus;
+    const ok = !!(rs && rs.IsSuccess);
+    setBusy(false);
+    if (ok) setSelected([]);
+    msg[ok ? "success" : "error"]((rs && rs.Msg) || "操作失败");
+  }
+  async function doPush(row) {
+    const res = await store.call(SVC.PUSH, {
+      formid: "PUR_PurchaseOrder",
+      data: JSON.stringify({ Ids: [row.key], TargetFormId: TARGET_FORM, RuleId: "" }),
+    });
+    const rs = res.response && res.response.Result && res.response.Result.ResponseStatus;
+    const ok = !!(rs && rs.IsSuccess);
+    const entity = ok && res.response.Result.SuccessEntitys && res.response.Result.SuccessEntitys[0] ? res.response.Result.SuccessEntitys[0] : null;
+    setPushResult({ ok: ok, msg: (rs && rs.Msg) || "下推失败", sourceNo: row.number, id: entity ? entity.Id : "—", number: entity ? entity.Number : "—" });
+  }
+  async function openDetail(row) {
+    setDetail({ open: true, loading: true, id: row.key, number: row.number, model: null, error: "" });
+    const res = await store.call(SVC.VIEW, { formid: "PUR_PurchaseOrder", data: JSON.stringify({ Id: row.key }) });
+    const model = res.response && res.response.Result;
+    if (model && model.Id != null) setDetail({ open: true, loading: false, id: row.key, number: model.FBillNo || row.number, model: model, error: "" });
+    else setDetail({ open: true, loading: false, id: row.key, number: row.number, model: null, error: "未获取到单据详情（View）" });
+  }
+  async function doCreate(values) {
+    const res = await store.call(SVC.SAVE, {
+      formid: "PUR_PurchaseOrder",
+      data: JSON.stringify({
+        FSupplierId: { FNumber: values.supplier },
+        FPurchaseOrgId: { FNumber: "100", FName: "苏州工业园组织" },
+        FDate: values.fdate,
+        FCreatorName: appState.user || "Administrator",
+        FEntity: [{ FMaterialId: { FNumber: values.material }, FQty: values.qty, FPrice: values.price }],
+      }),
+    });
+    const rs = res.response && res.response.Result && res.response.Result.ResponseStatus;
+    const ok = !!(rs && rs.IsSuccess);
+    const entity = ok && res.response.Result.SuccessEntitys && res.response.Result.SuccessEntitys[0] ? res.response.Result.SuccessEntitys[0] : null;
+    msg[ok ? "success" : "error"](((rs && rs.Msg) || "保存失败") + (ok && entity ? "：" + entity.Number : ""));
+    if (ok) { setCreateOpen(false); form.resetFields(); onState({ purchaseFlowDone: true }); setError(""); }
+  }
+
+  const columns = [
+    { title: "单号", dataIndex: "number", key: "number" },
+    { title: "日期", dataIndex: ["model", "FDate"], key: "fdate" },
+    { title: "供应商", dataIndex: ["model", "FSupplierId", "FName"], key: "supplier" },
+    { title: "采购组织", dataIndex: ["model", "FPurchaseOrgId", "FName"], key: "org" },
+    { title: "创建人", dataIndex: ["model", "FCreatorName"], key: "creator" },
+    { title: "状态", dataIndex: "status", key: "status", render: (v) => <StatusTag status={v} /> },
+    { title: "凭证", dataIndex: "id", key: "fid", render: (_, row) => <Text type="secondary" style={{ fontSize: 12 }}>Id={row.key}</Text> },
+    {
+      title: "操作",
+      key: "action",
+      width: 300,
+      render: (_, row) => (
+        <Space size={4} wrap>
+          <Button size="small" data-od-id="purchase-view" icon={<EyeOutlined />} onClick={() => openDetail(row)}>查看</Button>
+          {row.status === "A" && <Button size="small" data-od-id="purchase-submit" type="primary" icon={<SendOutlined />} onClick={() => runFlow({ action: "submit", id: row.key })}>提交</Button>}
+          {row.status === "B" && <Button size="small" data-od-id="purchase-audit" type="primary" ghost icon={<AuditOutlined />} onClick={() => runFlow({ action: "audit", id: row.key })}>审核</Button>}
+          {row.status === "C" && <Button size="small" data-od-id="purchase-unaudit" icon={<ReloadOutlined />} onClick={() => runFlow({ action: "unaudit", id: row.key })}>反审核</Button>}
+          {row.status === "C" && <Button size="small" data-od-id="purchase-push" icon={<ThunderboltOutlined />} onClick={() => doPush(row)}>下推</Button>}
+          {row.status !== "C" && (
+            <Popconfirm title={"删除单据 " + row.number + "？"} okText="删除" cancelText="取消" onConfirm={() => runFlow({ action: "delete", id: row.key })}>
+              <Button size="small" danger data-od-id="purchase-delete" icon={<ExclamationCircleOutlined />}>删除</Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+  const downColumns = [
+    { title: "下游单号", dataIndex: "number", key: "number" },
+    { title: "来源单据", dataIndex: ["model", "SourceFormId"], key: "src" },
+    { title: "状态", dataIndex: "status", key: "status", render: (v) => <StatusTag status={v} /> },
+    { title: "内码", key: "id", render: (_, row) => <Text type="secondary" style={{ fontSize: 12 }}>{row.key}</Text> },
+  ];
+  return (
+    <div style={{ maxWidth: 1200 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        演示金蝶云·星空采购订单 WebAPI 全流程：查询（ExecuteBillQuery）、新建草稿（Save）、提交（Submit）、审核（Audit）、
+        查看（View）、反审核（UnAudit）、删除（Delete）、下推（Push → {TARGET_FORM}）。离线数据层与本机 mock_server.py 行为一致。
+      </Paragraph>
+      {error ? (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message="查询失败"
+          description={error}
+          action={<Button size="small" icon={<ReloadOutlined />} onClick={refresh}>重试</Button>}
+        />
+      ) : null}
+      <Card className="app-section">
+        <div className="app-toolbar">
+          <Space size={8} align="center">
+            <FilterOutlined style={{ color: "rgba(0,0,0,0.45)" }} />
+            <Segmented
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={[{ value: "all", label: "全部" }, { value: "A", label: "草稿" }, { value: "B", label: "已提交" }, { value: "C", label: "已审核" }]}
+            />
+          </Space>
+          <Input
+            data-od-id="purchase-search"
+            allowClear
+            style={{ width: 240 }}
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="搜索单号 / 供应商 / 采购组织"
+            prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+          />
+          <Button icon={<ReloadOutlined />} loading={loading} onClick={refresh}>刷新查询（Top 10）</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>新建草稿</Button>
+        </div>
+        <div className="app-toolbar">
+          <Text type="secondary" className="app-hint">已选 {selected.length} / {orders.length} 张</Text>
+          <Button size="small" data-od-id="purchase-batch-submit" loading={busy} disabled={!selected.length} icon={<SendOutlined />} onClick={() => runBatch("submit")}>批量提交</Button>
+          <Button size="small" data-od-id="purchase-batch-audit" loading={busy} disabled={!selected.length} icon={<AuditOutlined />} onClick={() => runBatch("audit")}>批量审核</Button>
+          <Button size="small" data-od-id="purchase-batch-unaudit" loading={busy} disabled={!selected.length} icon={<ReloadOutlined />} onClick={() => runBatch("unaudit")}>批量反审核</Button>
+          <Button size="small" danger data-od-id="purchase-batch-delete" loading={busy} disabled={!selected.length} icon={<DeleteOutlined />} onClick={() => runBatch("delete")}>批量删除</Button>
+        </div>
+        <p className="sr-only">采购订单列表：可勾选批量操作，每行提供查看、提交、审核、反审核、下推、删除操作。</p>
+        <Table
+          rowKey="key"
+          loading={loading}
+          columns={columns}
+          dataSource={orders}
+          rowSelection={{ selectedRowKeys: selected, onChange: (keys) => setSelected(keys) }}
+          pagination={{ pageSize: 10, showTotal: (t) => "共 " + t + " 张" }}
+          size="middle"
+          scroll={{ x: 1000 }}
+          locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={allOrders.length ? "没有符合筛选条件的单据" : "暂无采购订单，可新建草稿或重置演示数据"} /> }}
+        />
+        <div style={{ marginTop: 8 }}>
+          <Space split={<Divider type="vertical" />} wrap>
+            <Text type="secondary" className="app-hint">A=草稿</Text>
+            <Text type="secondary" className="app-hint">B=已提交</Text>
+            <Text type="secondary" className="app-hint">C=已审核</Text>
+            <Text type="secondary" className="app-hint">已审核单据需先反审核才能删除，下推仅对已审核单据开放</Text>
+          </Space>
+        </div>
+      </Card>
+      <Card title={"下推生成的下游单据（" + TARGET_FORM + "）"} className="app-section" size="small">
+        {downstream.length === 0 ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无下游单据：对已审核采购订单点击「下推」即可生成" />
+        ) : (
+          <Table rowKey="key" columns={downColumns} dataSource={downstream} pagination={false} size="small" scroll={{ x: 520 }} />
+        )}
+      </Card>
+      <Modal
+        title="新建采购订单草稿"
+        open={createOpen}
+        onOk={() => form.submit()}
+        onCancel={() => setCreateOpen(false)}
+        okText="保存"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <Paragraph type="secondary" style={{ marginBottom: 8 }}>
+          保存时模拟星空行为：强制写入内码（Id），单号按 SKY{"{"}formId去下划线{"}"}流水 生成，基础资料（供应商名称）自动带出。
+        </Paragraph>
+        <Form form={form} layout="vertical" onFinish={doCreate} initialValues={{ supplier: "VEN001", fdate: "2026-10-23", material: "M001", qty: 10, price: 88.5 }}>
+          <Form.Item name="supplier" label="供应商（基础资料）" rules={[{ required: true, message: "请选择供应商" }]}>
+            <Select options={[
+              { value: "VEN001", label: "VEN001 上海示例供应商" },
+              { value: "VEN002", label: "VEN002 北京示例供应商" },
+              { value: "VEN003", label: "VEN003 广州示例供应商" },
+            ]} />
+          </Form.Item>
+          <Form.Item name="fdate" label="单据日期" rules={[{ required: true }]}>
+            <Input placeholder="2026-10-23" />
+          </Form.Item>
+          <Form.Item name="material" label="物料编码" rules={[{ required: true }]}>
+            <Input placeholder="M001" />
+          </Form.Item>
+          <Form.Item name="qty" label="数量" rules={[{ required: true }]}>
+            <InputNumber style={{ width: "100%" }} min={1} />
+          </Form.Item>
+          <Form.Item name="price" label="单价" rules={[{ required: true }]}>
+            <InputNumber style={{ width: "100%" }} min={0} />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="下推结果（Push）"
+        open={!!pushResult}
+        footer={<Button onClick={() => setPushResult(null)}>关闭</Button>}
+        onCancel={() => setPushResult(null)}
+      >
+        {pushResult ? (
+          pushResult.ok ? (
+            <Space direction="vertical" size={8} style={{ width: "100%" }}>
+              <Alert type="success" showIcon message="下推成功" description={pushResult.msg + "：源单据 " + pushResult.sourceNo + " → 目标单据 " + TARGET_FORM} />
+              <Descriptions column={1} size="small" bordered>
+                <Descriptions.Item label="源单据">{pushResult.sourceNo}（PUR_PurchaseOrder）</Descriptions.Item>
+                <Descriptions.Item label="目标单据">{TARGET_FORM}</Descriptions.Item>
+                <Descriptions.Item label="下游内码">{pushResult.id}</Descriptions.Item>
+                <Descriptions.Item label="下游单号">{pushResult.number}</Descriptions.Item>
+              </Descriptions>
+            </Space>
+          ) : <Alert type="error" showIcon message="下推失败" description={pushResult.msg} />
+        ) : null}
+      </Modal>
+      <Drawer
+        title={detail.number ? "单据详情：" + detail.number : "单据详情"}
+        open={detail.open}
+        onClose={() => setDetail(Object.assign({}, detail, { open: false }))}
+        width={480}
+      >
+        {detail.loading ? <Spin /> : detail.error ? (
+          <Alert type="error" showIcon message="查看失败" description={detail.error} />
+        ) : detail.model ? (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="内码 Id">{detail.model.Id}</Descriptions.Item>
+            <Descriptions.Item label="单号">{detail.model.FBillNo}</Descriptions.Item>
+            <Descriptions.Item label="日期">{detail.model.FDate}</Descriptions.Item>
+            <Descriptions.Item label="供应商">{[detail.model.FSupplierId ? detail.model.FSupplierId.FNumber : "", detail.model.FSupplierId ? detail.model.FSupplierId.FName : ""].filter(Boolean).join(" ") || "—"}</Descriptions.Item>
+            <Descriptions.Item label="采购组织">{detail.model.FPurchaseOrgId ? detail.model.FPurchaseOrgId.FName : "—"}</Descriptions.Item>
+            <Descriptions.Item label="创建人">{detail.model.FCreatorName || "—"}</Descriptions.Item>
+            <Descriptions.Item label="状态"><StatusTag status={detail.model.FDocumentStatus} /></Descriptions.Item>
+            <Descriptions.Item label="分录">
+              {(detail.model.FEntity || []).length ? detail.model.FEntity.map((e, i) => (
+                <div key={i}>{e.FMaterialId ? e.FMaterialId.FNumber + " × " + e.FQty + " @ " + e.FPrice : "（空分录）"}</div>
+              )) : "（无分录，可在演示中仅保存主档）"}
+            </Descriptions.Item>
+          </Descriptions>
+        ) : null}
+        <div style={{ marginTop: 12 }}>
+          <Text type="secondary" className="app-hint">来源端点：View.common.kdsvc（详见「协议调用日志」）</Text>
+        </div>
+      </Drawer>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑭ 自定义单据（差旅费报销单 SKY_ExpReimburse）
+ * ============================================================ */
+function CustomDocPage({ appState }) {
+  const { message: msg } = KitApp.useApp();
+  const [tick, setTick] = useState(0);
+  const [form] = Form.useForm();
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [keyword, setKeyword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [detail, setDetail] = useState({ open: false, loading: false, model: null, error: "", number: "" });
+  useEffect(() => {
+    store.reload("SKY_ExpReimburse");
+    const un = store.subscribe(() => setTick((v) => v + 1));
+    return un;
+  }, []);
+  const bills = useMemo(() => store.snapshot(), [tick]);
+  const allDocs = Object.keys((bills.SKY_ExpReimburse || {}))
+    .map((bid) => Object.assign({ key: Number(bid) }, bills.SKY_ExpReimburse[bid]))
+    .sort((a, b) => b.model.Id - a.model.Id);
+  const kw = keyword.trim().toLowerCase();
+  const docs = allDocs.filter((d) => {
+    if (statusFilter !== "all" && d.status !== statusFilter) return false;
+    if (!kw) return true;
+    const staff = (d.model.FStaffId && d.model.FStaffId.FName) || "";
+    const staffNo = (d.model.FStaffId && d.model.FStaffId.FNumber) || "";
+    const dept = (d.model.FDepartmentId && d.model.FDepartmentId.FName) || "";
+    const reason = d.model.FReason || "";
+    return (d.number + " " + staff + " " + staffNo + " " + dept + " " + reason).toLowerCase().indexOf(kw) >= 0;
+  });
+
+  async function saveDoc(values, alsoSubmit) {
+    setBusy(true);
+    setError("");
+    const saved = await store.call(SVC.SAVE, {
+      formid: "SKY_ExpReimburse",
+      data: JSON.stringify({
+        FStaffId: { FNumber: values.staffNo },
+        FDepartmentId: { FNumber: values.deptNo },
+        FTravelDate: values.travelDate,
+        FReason: values.reason,
+        FAmount: values.amount,
+        FCreatorName: appState.user || "Administrator",
+      }),
+    });
+    const srs = saved.response && saved.response.Result && saved.response.Result.ResponseStatus;
+    const ok = !!(srs && srs.IsSuccess);
+    if (!ok) {
+      setBusy(false);
+      const reason = (srs && srs.Msg) || "保存失败";
+      setError(reason);
+      msg.error(reason);
+      return;
+    }
+    const entity = saved.response.Result.SuccessEntitys && saved.response.Result.SuccessEntitys[0] ? saved.response.Result.SuccessEntitys[0] : null;
+    let tail = "：" + (entity ? entity.Number : "");
+    if (alsoSubmit && entity) {
+      const sub = await store.call(SVC.SUBMIT, { formid: "SKY_ExpReimburse", data: JSON.stringify({ Ids: [entity.Id] }) });
+      const brs = sub.response && sub.response.Result && sub.response.Result.ResponseStatus;
+      tail += " → " + ((brs && brs.Msg) || "提交失败");
+    }
+    setBusy(false);
+    msg.success((srs.Msg || "保存成功") + tail);
+    form.resetFields();
+  }
+  async function docFlow(action, row) {
+    const service = SERVICE_BY_ACTION[action];
+    const res = await store.call(service, { formid: "SKY_ExpReimburse", data: JSON.stringify({ Ids: [row.key] }) });
+    const rs = res.response && res.response.Result && res.response.Result.ResponseStatus;
+    const ok = !!(rs && rs.IsSuccess);
+    msg[ok ? "success" : "error"]((rs && rs.Msg) || "操作失败");
+  }
+  async function openDetail(row) {
+    setDetail({ open: true, loading: true, model: null, error: "", number: row.number });
+    const res = await store.call(SVC.VIEW, { formid: "SKY_ExpReimburse", data: JSON.stringify({ Id: row.key }) });
+    const model = res.response && res.response.Result;
+    if (model && model.Id != null) setDetail({ open: true, loading: false, model: model, error: "", number: model.FBillNo || row.number });
+    else setDetail({ open: true, loading: false, model: null, error: "未获取到单据详情（View）", number: row.number });
+  }
+  const columns = [
+    { title: "单号", dataIndex: "number", key: "number" },
+    { title: "申请人", dataIndex: ["model", "FStaffId", "FName"], key: "staff" },
+    { title: "部门", dataIndex: ["model", "FDepartmentId", "FName"], key: "dept" },
+    { title: "出差日期", dataIndex: ["model", "FTravelDate"], key: "date" },
+    { title: "事由", dataIndex: ["model", "FReason"], key: "reason", ellipsis: true },
+    { title: "报销金额", dataIndex: ["model", "FAmount"], key: "amount", render: (v) => "¥" + Number(v || 0).toFixed(2) },
+    { title: "状态", dataIndex: "status", key: "status", render: (v) => <StatusTag status={v} /> },
+    {
+      title: "操作",
+      key: "action",
+      width: 280,
+      render: (_, row) => (
+        <Space size={4} wrap>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => openDetail(row)}>查看</Button>
+          {row.status === "A" && <Button size="small" type="primary" icon={<SendOutlined />} onClick={() => docFlow("submit", row)}>提交</Button>}
+          {row.status === "B" && <Button size="small" type="primary" ghost icon={<AuditOutlined />} onClick={() => docFlow("audit", row)}>审核</Button>}
+          {row.status === "C" && <Button size="small" icon={<ReloadOutlined />} onClick={() => docFlow("unaudit", row)}>反审核</Button>}
+          {row.status !== "C" && (
+            <Popconfirm title={"删除单据 " + row.number + "？"} okText="删除" cancelText="取消" onConfirm={() => docFlow("delete", row)}>
+              <Button size="small" danger icon={<ExclamationCircleOutlined />}>删除</Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
+  ];
+  return (
+    <div style={{ maxWidth: 1200 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        演示在二开插件定义的自定义单据（formId：SKY_ExpReimburse）上调用 Save / Submit / Audit / View：
+        保存后自动生成 SKYExpReimburse 单号并补齐基础资料名称；「保存并提交」为真实的 Save → Submit 两步调用。
+      </Paragraph>
+      {error ? <Alert type="error" showIcon style={{ marginBottom: 12 }} message="保存失败" description={error} /> : null}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <Card title="差旅费报销单（SKY_ExpReimburse）" style={{ flex: "1 1 420px", maxWidth: 560 }}>
+          <Form form={form} layout="vertical" onFinish={(v) => saveDoc(v, false)} initialValues={{ staffNo: "E1001", deptNo: "D01", travelDate: "2026-10-22", reason: "上海-苏州客户拜访差旅", amount: 1280.5 }}>
+            <Form.Item name="staffNo" label="员工编码" rules={[{ required: true }]}><Input placeholder="E1001" /></Form.Item>
+            <Form.Item name="deptNo" label="部门编码" rules={[{ required: true }]}><Input placeholder="D01" /></Form.Item>
+            <Form.Item name="travelDate" label="出差日期" rules={[{ required: true }]}><Input placeholder="2026-10-22" /></Form.Item>
+            <Form.Item name="reason" label="报销事由" rules={[{ required: true }]}><Input.TextArea rows={2} /></Form.Item>
+            <Form.Item name="amount" label="报销金额（元）" rules={[{ required: true }]}><InputNumber style={{ width: "100%" }} min={0} prefix="¥" /></Form.Item>
+            <Form.Item>
+              <Space wrap>
+                <Button type="primary" htmlType="submit" loading={busy} icon={<FileAddOutlined />}>保存（Save）</Button>
+                <Button type="primary" ghost loading={busy} icon={<SendOutlined />} onClick={() => form.validateFields().then((v) => saveDoc(v, true)).catch(() => msg.warning("请先补全表单必填项"))}>保存并提交</Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Card>
+        <Card
+          title="已创建的自定义单据"
+          style={{ flex: "1 1 480px", minWidth: 320 }}
+          extra={<Segmented size="small" value={statusFilter} onChange={setStatusFilter} options={[{ value: "all", label: "全部" }, { value: "A", label: "草稿" }, { value: "B", label: "已提交" }, { value: "C", label: "已审核" }]} />}
+        >
+          <div className="app-toolbar">
+            <Text type="secondary" className="app-hint">共 {docs.length} / {allDocs.length} 张</Text>
+            <Input
+              data-od-id="customdoc-search"
+              allowClear
+              style={{ width: 240 }}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="搜索单号 / 申请人 / 部门 / 事由"
+              prefix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />}
+            />
+          </div>
+          <p className="sr-only">自定义单据列表：包含单号、申请人、部门、出差日期、事由、报销金额、状态与操作。</p>
+          <Table
+            rowKey="key"
+            columns={columns}
+            dataSource={docs}
+            pagination={false}
+            size="middle"
+            scroll={{ x: 860 }}
+            locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={allDocs.length ? "没有符合筛选条件的单据" : "尚未创建单据，填写左侧表单保存即可"} /> }}
+          />
+        </Card>
+      </div>
+      <Drawer
+        title={detail.number ? "单据详情：" + detail.number : "单据详情"}
+        open={detail.open}
+        onClose={() => setDetail(Object.assign({}, detail, { open: false }))}
+        width={460}
+      >
+        {detail.loading ? <Spin /> : detail.error ? (
+          <Alert type="error" showIcon message="查看失败" description={detail.error} />
+        ) : detail.model ? (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="内码 Id">{detail.model.Id}</Descriptions.Item>
+            <Descriptions.Item label="单号">{detail.model.FBillNo}</Descriptions.Item>
+            <Descriptions.Item label="申请人">{[detail.model.FStaffId ? detail.model.FStaffId.FNumber : "", detail.model.FStaffId ? detail.model.FStaffId.FName : ""].filter(Boolean).join(" ") || "—"}</Descriptions.Item>
+            <Descriptions.Item label="部门">{[detail.model.FDepartmentId ? detail.model.FDepartmentId.FNumber : "", detail.model.FDepartmentId ? detail.model.FDepartmentId.FName : ""].filter(Boolean).join(" ") || "—"}</Descriptions.Item>
+            <Descriptions.Item label="出差日期">{detail.model.FTravelDate || "—"}</Descriptions.Item>
+            <Descriptions.Item label="报销事由">{detail.model.FReason || "—"}</Descriptions.Item>
+            <Descriptions.Item label="报销金额">{"¥" + Number(detail.model.FAmount || 0).toFixed(2)}</Descriptions.Item>
+            <Descriptions.Item label="状态"><StatusTag status={detail.model.FDocumentStatus} /></Descriptions.Item>
+          </Descriptions>
+        ) : null}
+      </Drawer>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑮ 传输安全策略
+ * ============================================================ */
+function SecurityPage({ appState, setAppState }) {
+  const { message: msg } = KitApp.useApp();
+  const { mode } = useDataMode();
+  const [logs, setLogs] = useState([]);
+  const [testing, setTesting] = useState(false);
+  const allow = appState.allowInsecureHttp;
+
+  function toggleAllow(v) {
+    setAppState({ allowInsecureHttp: v });
+    msg[v ? "warning" : "success"](v ? "已显式放行明文 HTTP（演示降级场景）" : "已恢复强制 HTTPS");
+  }
+  function runProbe(protocol) {
+    setTesting(true);
+    setTimeout(() => {
+      const isHttps = protocol === "https";
+      const blocked = !isHttps && !allow;
+      setLogs((prev) => [
+        {
+          key: prev.length + 1,
+          time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+          endpoint: protocol + "://gateway" + (isHttps ? "" : ":8080") + "/K3Cloud/Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery.common.kdsvc",
+          protocol: isHttps ? "HTTPS" : "HTTP",
+          strategy: allow ? "显式放行（警告）" : "默认拦截",
+          result: blocked ? "已拦截" : "已放行",
+        },
+        ...prev,
+      ].slice(0, 50));
+      setTesting(false);
+      msg[blocked ? "error" : "info"](isHttps ? "HTTPS 请求正常放行" : blocked ? "明文 HTTP 已被默认策略拦截" : "明文 HTTP 已放行（告警）");
+    }, 300);
+  }
+  const columns = [
+    { title: "时间", dataIndex: "time", key: "time", width: 110 },
+    { title: "请求端点", dataIndex: "endpoint", key: "endpoint", ellipsis: true },
+    { title: "协议", dataIndex: "protocol", key: "protocol", width: 90, render: (v) => <Tag color={v === "HTTPS" ? "green" : "orange"}>{v}</Tag> },
+    { title: "策略", dataIndex: "strategy", key: "strategy", width: 150 },
+    { title: "结果", dataIndex: "result", key: "result", width: 100, render: (v) => <Tag color={v === "已放行" ? "green" : "red"}>{v}</Tag> },
+  ];
+  return (
+    <div style={{ maxWidth: 1100 }}>
+      <Paragraph type="secondary" style={{ marginBottom: 16 }}>
+        模拟客户端的传输安全策略：<Text strong>默认强制 HTTPS</Text>，仅当显式放行时允许明文 HTTP，且放行会触发告警；
+        该策略同时影响部署自检结果与下方请求日志。当前数据来源：<SourceTag source={mode} />。
+      </Paragraph>
+      <Card className="app-section">
+        <div className="app-toolbar">
+          <Space size={12} align="center">
+            <Text strong>AllowInsecureHttp</Text>
+            <Switch data-od-id="security-allow-switch" checked={allow} checkedChildren="放行 HTTP" unCheckedChildren="强制 HTTPS" onChange={toggleAllow} />
+            <Tag color={allow ? "warning" : "success"}>{allow ? "明文 HTTP 已放行" : "强制 HTTPS"}</Tag>
+          </Space>
+          <Button type="primary" icon={<SafetyOutlined />} loading={testing} onClick={() => runProbe("https")}>探测 HTTPS</Button>
+          <Button danger icon={<UnlockOutlined />} loading={testing} onClick={() => runProbe("http")}>探测 HTTP</Button>
+        </div>
+        {allow ? (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message="当前已显式放行明文 HTTP"
+            description="演示降级场景：生产环境务必保持 AllowInsecureHttp=false，强制 HTTPS 传输，避免账号与业务数据明文暴露。"
+          />
+        ) : (
+          <Alert
+            type="success"
+            showIcon
+            style={{ marginBottom: 12 }}
+            message="当前为强制 HTTPS"
+            description="传输安全默认策略正确；明文 HTTP 将被阻断并记录到下方请求日志。"
+          />
+        )}
+        <p className="sr-only">传输安全探测日志：包含时间、请求端点、协议、策略与结果。</p>
+        <Table
+          rowKey="key"
+          columns={columns}
+          dataSource={logs}
+          pagination={false}
+          size="middle"
+          scroll={{ x: 760 }}
+          locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="尚未发起探测，点击上方按钮生成请求日志" /> }}
+        />
+        <Paragraph type="secondary" className="app-hint" style={{ marginTop: 8, marginBottom: 0 }}>
+          说明：本页探测为客户端传输策略的<Text strong>行为模拟</Text>，不发起真实网络请求；真实网络调用记录见顶栏「协议调用日志」。
+        </Paragraph>
+      </Card>
+    </div>
+  );
+}
+
+/* ============================================================
+ * ⑯ 外壳：顶导航 + 侧导 + 页面工具条 + 内容面
+ * ============================================================ */
+function GlobalHeader() {
+  const { message } = KitApp.useApp();
+  const tip = () => message.info("原型演示：全局导航");
+  const dropdowns = ["产品", "文档", "支持"];
+  return (
+    <header className="gheader" data-od-id="global-header" data-dumate-top-nav>
+      <MenuOutlined className="gh-icon" onClick={tip} />
+      <span className="neutral-brand" onClick={tip}>WebApiClient 演示</span>
+      <Button className="gh-console" icon={<HomeOutlined />} onClick={() => { location.hash = "/overview"; }}>操作台</Button>
+      <span className="gh-spacer" />
+      <span className="gh-search" style={{ width: 240 }}>
+        <Input placeholder="搜索演示功能" suffix={<SearchOutlined style={{ color: "rgba(0,0,0,0.45)" }} />} onPressEnter={tip} />
+      </span>
+      {dropdowns.map((d) => (
+        <span key={d} className="gh-link" onClick={tip}>{d}<DownOutlined style={{ fontSize: 10 }} /></span>
+      ))}
+      <Badge dot offset={[-4, 4]}><BellOutlined className="gh-icon" onClick={tip} /></Badge>
+      <MobileOutlined className="gh-icon" onClick={tip} />
+      <span className="gh-en" onClick={tip}>EN</span>
+      <Avatar size={24} style={{ backgroundColor: "#000", fontSize: 13, cursor: "pointer" }} onClick={tip}>A</Avatar>
+    </header>
+  );
+}
+
+function SideNav({ route, collapsed, onToggle }) {
+  return (
+    <aside className={collapsed ? "side collapsed" : "side"}>
+      <div className="side-title">{collapsed ? "" : "演示工作区"}</div>
+      <div className="side-menu">
+        <Menu
+          mode="inline"
+          items={navItems}
+          selectedKeys={[route]}
+          onClick={(e) => { location.hash = e.key; }}
+        />
+      </div>
+      <div className="side-footer" onClick={onToggle}>
+        {collapseIcon}
+        {collapsed ? "" : "收起"}
+      </div>
+    </aside>
+  );
+}
+
+function Shell() {
+  const route = useHashRoute();
+  const [themeMode, setThemeMode] = useState("light");
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const [appState, setAppState] = useState({
+    selfcheckReady: false,
+    selfcheckOutput: null,
+    loggedIn: false,
+    user: "",
+    allowInsecureHttp: false,
+    purchaseFlowDone: false,
+  });
+  const [dataTick, setDataTick] = useState(0);
+  const [logOpen, setLogOpen] = useState(false);
+  const [queryError, setQueryError] = useState("");
+  const mode = useDataMode();
+  const logCount = useProtoLog().length;
+
+  useEffect(() => {
+    store.reloadAll();
+    const un = store.subscribe(() => setDataTick((v) => v + 1));
+    return un;
+  }, []);
+  useEffect(() => {
+    let last = transport.mode;
+    return transport.subscribe(() => {
+      if (transport.mode !== last) {
+        last = transport.mode;
+        store.reloadAll().then((out) => {
+          const firstFail = Object.keys(out).map((k) => out[k]).filter((r) => r && !r.ok)[0];
+          setQueryError(firstFail ? firstFail.error : "");
+        });
+      }
+    });
+  }, []);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return undefined;
+    const mq = window.matchMedia("(max-width: 900px)");
+    const apply = () => setNavCollapsed(mq.matches);
+    apply();
+    if (mq.addEventListener) mq.addEventListener("change", apply);
+    else if (mq.addListener) mq.addListener(apply);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", apply);
+      else if (mq.removeListener) mq.removeListener(apply);
+    };
+  }, []);
+  // 便于校验工具读取运行态（只读，不改变行为）
+  window.__transport = () => ({ mode: transport.mode, fallback: transport.fallback, base: transport.base });
+  window.__protoLog = () => protoLog.snapshot();
+
+  function patchApp(patch) { setAppState((prev) => Object.assign({}, prev, patch)); }
+  function onNavigate(path) { location.hash = path; }
+  async function onResetDemo() {
+    const res = await store.resetDemo();
+    setQueryError("");
+    if (res && res.Message) return true;
+    return true;
+  }
+  const pages = {
+    "/overview": <OverviewPage onNavigate={onNavigate} appState={appState} bills={store.snapshot()} lastError={queryError} />,
+    "/selfcheck": <SelfcheckPage appState={appState} setAppState={patchApp} />,
+    "/auth": <AuthPage appState={appState} setAppState={patchApp} />,
+    "/purchase": <PurchasePage appState={appState} onState={patchApp} />,
+    "/custom-doc": <CustomDocPage appState={appState} />,
+    "/security": <SecurityPage appState={appState} setAppState={patchApp} />,
+  };
+  const Page = pages[route] || pages["/overview"];
+  const routeMeta = ROUTES[route] || ROUTES["/overview"];
+  return (
+    <ConfigProvider locale={zhCN} themeMode={themeMode}>
+      <KitApp>
+        <div data-dumate-shell="foundation-cloud" style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
+          <GlobalHeader />
+          <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+            <SideNav route={route} collapsed={navCollapsed} onToggle={() => setNavCollapsed((v) => !v)} />
+            <main className="app-main">
+              <div className="page-header">
+                <div>
+                  <h1 className="page-h1">{routeMeta.name}</h1>
+                  <Text type="secondary" className="page-sub">{PAGE_SUB[route] || ""}</Text>
+                </div>
+                <div className="ph-controls">
+                  <DataSourceButton />
+                  <Badge count={logCount} size="small" offset={[-2, 2]}>
+                    <Button data-od-id="proto-log-open" icon={<ApiOutlined />} onClick={() => setLogOpen(true)}>协议调用日志</Button>
+                  </Badge>
+                  <Popconfirm title="重置演示数据为初始 3 张采购订单？" okText="重置" cancelText="取消" onConfirm={async () => { await onResetDemo(); patchApp({ purchaseFlowDone: false }); }}>
+                    <Button data-od-id="reset-demo" icon={<ReloadOutlined />}>重置演示数据</Button>
+                  </Popconfirm>
+                  <Space size={6} align="center">
+                    <BulbOutlined style={{ color: "rgba(0,0,0,0.45)" }} />
+                    <Switch
+                      data-od-id="theme-switch"
+                      checked={themeMode === "dark"}
+                      checkedChildren="暗色"
+                      unCheckedChildren="亮色"
+                      onChange={(v) => setThemeMode(v ? "dark" : "light")}
+                    />
+                  </Space>
+                </div>
+              </div>
+              {mode.fallback ? (
+                <Alert
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                  message="在线服务不可达，已自动回退离线内存模拟"
+                  description={transport.base + " 连接失败；可点击「数据源」重新测试连接，或继续使用离线数据层演示。"}
+                  action={<Button size="small" icon={<SyncOutlined />} onClick={() => { transport.clearFallback(); transport.setMode("live"); }}>重试在线</Button>}
+                />
+              ) : null}
+              <Spin spinning={false} />
+              {Page}
+            </main>
+          </div>
+          <ProtocolLogDrawer open={logOpen} onClose={() => setLogOpen(false)} />
+        </div>
+      </KitApp>
+    </ConfigProvider>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<Shell />);
+</script>
+</body>
+</html>

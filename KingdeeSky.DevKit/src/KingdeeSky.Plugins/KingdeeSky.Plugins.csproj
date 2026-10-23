@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8DA0AEB3-77FE-4F90-9BDC-B2819B61BEE9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>KingdeeSky.Plugins</RootNamespace>
+    <AssemblyName>KingdeeSky.Plugins</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <Company>KingdeeSky.DevKit (示例代码，非金蝶官方)</Company>
+    <Product>金蝶云·星空二开示例插件包</Product>
+    <Version>1.0.0.0</Version>
+    <!--
+      版本锁定：本工程锁定金蝶云·星空 V9.1（.NET Framework 4.8）。
+      插件与星空版本强绑定，勿混用其它版本的 Kingdee.BOS.* 程序集；
+      如需支持多版本，请按编译矩阵 + 测试矩阵评估成本后再放开。
+    -->
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- 金蝶 BOS 程序集目录：默认 lib\；可通过 MSBuild 属性覆盖，如
+         msbuild KingdeeSky.Plugins.csproj /p:KingdeeBinsDir="D:\K3Cloud\WebSite\bin"
+         或 CI 中从授权环境注入。DLL 不随代码分发。 -->
+    <KingdeeBinsDir Condition=" '$(KingdeeBinsDir)' == '' ">..\..\lib</KingdeeBinsDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 金蝶 BOS 程序集：由 $(KingdeeBinsDir) 指向（默认 lib\，可用 /p:KingdeeBinsDir 覆盖）。
+         先运行 lib\copy-kingdee-dlls.bat 从星空应用服务器 WebSite\bin 拷贝（V9.1 对应版本）。 -->
+    <Reference Include="Kingdee.BOS">
+      <HintPath>$(KingdeeBinsDir)\Kingdee.BOS.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Core">
+      <HintPath>$(KingdeeBinsDir)\Kingdee.BOS.Core.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Kingdee.BOS.App">
+      <HintPath>$(KingdeeBinsDir)\Kingdee.BOS.App.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Orm">
+      <HintPath>$(KingdeeBinsDir)\Kingdee.BOS.Orm.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\FieldHelper.cs" />
+    <Compile Include="Common\AuditLogHelper.cs" />
+    <Compile Include="PurchaseOrder\PurchaseOrderFormPlugin.cs" />
+    <Compile Include="PurchaseOrder\PurchaseOrderSaveValidator.cs" />
+    <Compile Include="PurchaseOrder\PurchaseOrderAuditOpPlugin.cs" />
+    <Compile Include="CustomBill\ExpReimburseFormPlugin.cs" />
+    <Compile Include="CustomBill\ExpReimburseSaveValidator.cs" />
+    <Compile Include="CustomBill\ExpReimburseAuditOpPlugin.cs" />
+    <Compile Include="Convert\PurchaseOrderToInStockConvertPlugin.cs" />
+    <Compile Include="Convert\PurchaseInStockWriteBackPlugin.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,38 @@
+# ============ KingdeeSky.DevKit 忽略规则 ============
+# 分层约定：非敏感配置（App.config / *.example）入库；密钥类文件一律忽略。
+
+# ---- 密钥与本地配置（严禁入库） ----
+secrets.env
+*.secrets.env
+App.config.local
+*.dpapi
+*.dpapi.json
+# 多环境真实配置文件（非敏感项模板 *.env.example 入库，真实 env/*.env 忽略）
+env/*.env
+
+# ---- 构建产物 ----
+bin/
+obj/
+artifacts/
+*.user
+*.suo
+*.userprefs
+
+# ---- IDE / 系统 ----
+.vs/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
+# VS Code：个人编辑器偏好忽略，共享的 launch.json / tasks.json 入库
+.vscode/settings.json
+# AI 编码代理（Kilo Code）本地工作目录与状态，不入库
+.kilo/
+.kilocode/
+
+# ---- 日志 ----
+logs/
+*.log
+
+# ---- 性能基线（机器生成，标记与保留策略见 deploy/SLA与备份恢复预案.md） ----
+perf/perf-baseline-*.txt

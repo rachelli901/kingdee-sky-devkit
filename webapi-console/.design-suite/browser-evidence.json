@@ -1,0 +1,397 @@
+{
+  "evidence_type": "b2b-playwright-browser-evidence/v1",
+  "generator": "capture-b2b-browser-evidence.mjs",
+  "kind": "b2b",
+  "served_url": "http://127.0.0.1:18321/index.html",
+  "captured_at": "2026-10-23T01:53:13.125Z",
+  "browser": "�������е�������Ự�д򿪡�",
+  "build_sha256": "6875d4f6ab169bef83718de8af07882243246fe63986961b25234945489d493e",
+  "contract_sha256": "4fc77f870db01a09ed92f573cde7545fdf23b150c72a56e33bf42e42363c9e06",
+  "provider": "banlan",
+  "main_selector": "main",
+  "checks": {
+    "main_task": "passed",
+    "console": "passed",
+    "resources": "passed",
+    "keyboard": "passed",
+    "responsive": "passed",
+    "states": "passed"
+  },
+  "console_counts": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "console_errors": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 320,
+      "scroll_width": 320,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 390,
+      "scroll_width": 390,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    },
+    {
+      "width": 768,
+      "height": 1024,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 768,
+      "scroll_width": 768,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 1440,
+      "scroll_width": 1440,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 1920,
+      "scroll_width": 1920,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    },
+    {
+      "width": 2560,
+      "height": 1080,
+      "url": "http://127.0.0.1:18321/index.html",
+      "ready_state": "complete",
+      "client_width": 2560,
+      "scroll_width": 2560,
+      "main_visible": true,
+      "failed_images": [],
+      "failed_resources": [],
+      "provider_shell": true,
+      "page_container": true,
+      "content_surface": true,
+      "top_navigation": true,
+      "top_navigation_visible": true,
+      "navigation": [
+        {
+          "label": "操作台总览",
+          "path": "/overview",
+          "active": true,
+          "visible": true
+        },
+        {
+          "label": "部署自检",
+          "path": "/selfcheck",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "登录鉴权",
+          "path": "/auth",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "采购订单",
+          "path": "/purchase",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "自定义单据",
+          "path": "/custom-doc",
+          "active": false,
+          "visible": true
+        },
+        {
+          "label": "传输安全策略",
+          "path": "/security",
+          "active": false,
+          "visible": true
+        }
+      ],
+      "active_label": "操作台总览",
+      "fonts_status": "loaded"
+    }
+  ],
+  "dom": {
+    "provider_shell": true,
+    "page_container": true,
+    "content_surface": true,
+    "top_navigation": {
+      "policy": "required",
+      "visible": true,
+      "ok": true
+    },
+    "navigation": {
+      "ok": true,
+      "missing_keys": [],
+      "active_navigation_key": "overview",
+      "active_label": "操作台总览"
+    }
+  },
+  "keyboard_focus": {
+    "tag": "button",
+    "role": null,
+    "aria_label": null,
+    "visible": true,
+    "body_focused": false
+  }
+}

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C235B887-7131-4B17-90C0-ABF859223419}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>KingdeeSky.WebApiClient</RootNamespace>
+    <AssemblyName>KingdeeSky.WebApiClient</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <Company>KingdeeSky.DevKit (示例代码，非金蝶官方)</Company>
+    <Product>金蝶云·星空 WebAPI 对接示例</Product>
+    <Version>1.0.0.0</Version>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseWinFormsOutOfProcDesigner>False</UseWinFormsOutOfProcDesigner>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseWinFormsOutOfProcDesigner>False</UseWinFormsOutOfProcDesigner>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 零金蝶 DLL 依赖：直接用 HttpWebRequest 调用 .kdsvc 端点，拿到任何星空环境地址即可编译运行 -->
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="KingdeeWebApiClient.cs" />
+    <Compile Include="Scenarios.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Diagnostics\HealthCheck.cs" />
+    <Compile Include="Logging\SafeLogger.cs" />
+    <Compile Include="Security\AppIdAppSecAuthProvider.cs" />
+    <Compile Include="Security\AuthProviderFactory.cs" />
+    <Compile Include="Security\DpapiSecretProvider.cs" />
+    <Compile Include="Security\EnvironmentSecretProvider.cs" />
+    <Compile Include="Security\FileSecretProvider.cs" />
+    <Compile Include="Security\HmacSha256AppSecSigner.cs" />
+    <Compile Include="Security\IAppSecSigner.cs" />
+    <Compile Include="Security\IAuthProvider.cs" />
+    <Compile Include="Security\ISecretProvider.cs" />
+    <Compile Include="Security\KmsSecretProvider.cs" />
+    <Compile Include="Security\OAuth2AuthProvider.cs" />
+    <Compile Include="Security\PasswordAuthProvider.cs" />
+    <Compile Include="Security\SecretProviderFactory.cs" />
+    <Compile Include="Security\SecretRedactor.cs" />
+    <Compile Include="Security\TransportSecurityPolicy.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="App.config.example" />
+    <None Include="secrets.env.example" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.8 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

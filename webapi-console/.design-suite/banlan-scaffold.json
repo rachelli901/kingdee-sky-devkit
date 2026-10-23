@@ -1,0 +1,97 @@
+{
+  "state": "scaffold-ready",
+  "kind": "banlan-b2b-scaffold/v1",
+  "provider": "banlan",
+  "style_label": "DuMate 风格",
+  "contract_path": ".design-suite/b2b-contract.json",
+  "contract_sha256": "4fc77f870db01a09ed92f573cde7545fdf23b150c72a56e33bf42e42363c9e06",
+  "kit_contract": {
+    "verified_by": "banlan-kit-contract",
+    "package": "@baidu/qianfan-antd-kit",
+    "authoring": "HTML + Babel + React",
+    "vendor_policy": "local-only-development",
+    "static_check": "check.mjs",
+    "finalization": "compiled-and-inline-single-html",
+    "legacy_runtime": "removed",
+    "vendor": [
+      "vendor/qianfan-antd-kit.js",
+      "vendor/qianfan-antd-kit.css",
+      "vendor/babel.min.js",
+      "vendor/esm.sh/"
+    ]
+  },
+  "development_root": "prototype",
+  "development_entry": "prototype/index.html",
+  "provider_assets": {
+    "provider": "banlan",
+    "vendor_root": "D:\\02.Project\\02.GitHub\\JinDie\\webapi-console\\prototype\\vendor",
+    "kit_version": "0.1.0",
+    "verified_files": [
+      "vendor/qianfan-antd-kit.js",
+      "vendor/qianfan-antd-kit.css",
+      "vendor/babel.min.js",
+      "vendor/echarts.min.js",
+      "vendor/banlan-echarts-theme.js"
+    ]
+  },
+  "assembly": {
+    "version": "b2b-assembly/v1",
+    "template_id": "dashboard-page-console",
+    "template_path": "page-generation/html-templates/foundation-cloud.html",
+    "template_sha256": "b09578ab03e8b5040f043dcf10393606994fd032936b2cd7be382e1de722e83a",
+    "shell_template_id": "shell-foundation-cloud",
+    "shell_template_path": "page-generation/html-templates/foundation-cloud.html",
+    "shell_template_sha256": "b09578ab03e8b5040f043dcf10393606994fd032936b2cd7be382e1de722e83a",
+    "shell_profile": "banlan-foundation-cloud-default",
+    "provider_package_sha256": "fa1b7e2a52aac18f9053861c1bd6ed08915416c1c600057c9e057c93b1b694a9",
+    "allowed_business_slots": [
+      "navigation_items",
+      "title",
+      "description",
+      "data",
+      "filters",
+      "columns",
+      "row_actions",
+      "batch_actions",
+      "states"
+    ],
+    "required_structure": [
+      "Menu",
+      "Statistic",
+      "Card",
+      "Table"
+    ],
+    "required_state_matrix": [
+      "loading",
+      "empty",
+      "error",
+      "populated"
+    ],
+    "theme_policy": "provider-default-only",
+    "runtime_integration": {
+      "mode": "banlan-html-babel-react-kit-to-static-export/v2",
+      "development_authoring": "HTML + Babel + React",
+      "development_kit": "@baidu/qianfan-antd-kit",
+      "development_vendor": "local prototype/vendor (development-only)",
+      "authoring_import": "@baidu/qianfan-antd-kit",
+      "authoring_template": "Banlan HTML template with local import map and Babel module script",
+      "kit_vendor": "vendor/qianfan-antd-kit.js",
+      "kit_stylesheet": "vendor/qianfan-antd-kit.css",
+      "static_check": "check.mjs",
+      "template_binding": "assembly-hash-pinned",
+      "development_preview": "served-production-build",
+      "finalization": "static-export-single-html",
+      "browser_babel_vendor": "development-only",
+      "final_artifact_runtime": "compiled-and-inline-single-html",
+      "external_network": "forbidden"
+    }
+  },
+  "source_generation": "pending-agent-implementation",
+  "validation": "pending-build-and-browser-evidence",
+  "constraints": [
+    "Use the Banlan HTML + Babel + React + @baidu/qianfan-antd-kit route selected by the contract.",
+    "Fill only assembly.allowed_business_slots.",
+    "Do not copy provider CSS into src or substitute native controls.",
+    "Do not claim delivery before validate produces an export-approved receipt."
+  ]
+}

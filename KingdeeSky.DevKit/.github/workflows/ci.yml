@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  build-test-package:
+    name: Build + Test + Package
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Secret scan (no plaintext secrets gate)
+        shell: powershell
+        run: ./eng/scan-secrets.ps1
+
+      - name: Build, test and package (zero Kingdee deps)
+        shell: powershell
+        run: ./eng/build.ps1 -SkipSecretScan
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: kingdeesky-devkit-build
+          path: artifacts/*.zip
+          if-no-files-found: error

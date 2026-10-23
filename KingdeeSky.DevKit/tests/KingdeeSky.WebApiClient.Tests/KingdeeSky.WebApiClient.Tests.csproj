@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C235B887-7131-4B17-90C0-ABF859223420}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>KingdeeSky.WebApiClient.Tests</RootNamespace>
+    <AssemblyName>KingdeeSky.WebApiClient.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <Company>KingdeeSky.DevKit (示例代码，非金蝶官方)</Company>
+    <Product>KingdeeSky.WebApiClient 测试门禁</Product>
+    <Version>1.0.0.0</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 与被测代码同程序集编译（internal 可测），零金蝶 DLL、零第三方依赖 -->
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="TestProgram.cs" />
+    <Compile Include="TestFramework.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="AuthProviderTests.cs" />
+    <Compile Include="SecretProviderTests.cs" />
+    <Compile Include="ConfigTests.cs" />
+    <Compile Include="ClientTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 被测源码（排除 Program.cs，避免与测试 Main 冲突） -->
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\KingdeeWebApiClient.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Scenarios.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Logging\SafeLogger.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\AppIdAppSecAuthProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\AuthProviderFactory.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\DpapiSecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\EnvironmentSecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\FileSecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\IAuthProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\ISecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\KmsSecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\OAuth2AuthProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\PasswordAuthProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\SecretProviderFactory.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\SecretRedactor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Settings.Load 依赖 app.config：随输出目录复制为 Tests.exe.config -->
+    <Content Include="..\..\src\KingdeeSky.WebApiClient\App.config">
+      <Link>App.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,192 @@
+{
+  "ok": true,
+  "state": "contract-ready",
+  "gate": "b2b-preflight",
+  "deliverable": "b2b-page",
+  "page_context": "b2b-page",
+  "design_target": "web",
+  "page_type": "dashboard",
+  "style": "dumate",
+  "style_label": "DuMate 风格",
+  "style_source": "user-style",
+  "provider": "banlan",
+  "provider_source": "user-style",
+  "delivery_adapter": "static-export",
+  "delivery_format": "single-html",
+  "export_mode": "single-file",
+  "asset_policy": "inline-base64",
+  "network_dependencies": [],
+  "navigation_mode": "same-document",
+  "provider_contract_version": "banlan-kit/v2",
+  "package_versions": null,
+  "reference_bundle": null,
+  "framework_profile": "banlan-html-babel-react-kit",
+  "framework_maturity": "kit-ready",
+  "development_authoring": "html-babel-react-kit",
+  "development_kit": "@baidu/qianfan-antd-kit",
+  "development_vendor_policy": "local-only-development",
+  "scope": "banlan-workspace",
+  "kit_contract": {
+    "verified_by": "banlan-kit-contract",
+    "package": "@baidu/qianfan-antd-kit",
+    "authoring": "HTML + Babel + React",
+    "vendor_policy": "local-only-development",
+    "static_check": "check.mjs",
+    "finalization": "compiled-and-inline-single-html",
+    "legacy_runtime": "removed",
+    "vendor": [
+      "vendor/qianfan-antd-kit.js",
+      "vendor/qianfan-antd-kit.css",
+      "vendor/babel.min.js",
+      "vendor/esm.sh/"
+    ]
+  },
+  "page_contract_evidence": "kit-template",
+  "kit_version": "0.1.0",
+  "kit_component_count": 49,
+  "core_task": "以浏览器操作台演示 KingdeeSky.WebApiClient 客户端能力：部署前自检、登录鉴权（密码/AppID+AppSec 模式、env/file/dpapi/kms 密钥来源）、采购订单全流程、自定义单据新建与传输安全策略",
+  "primary_action": "演示走通一次采购订单全流程并查看传输安全状态",
+  "data_source": "mock",
+  "data_contract": {
+    "source": "mock",
+    "entities": [
+      "selfcheck",
+      "auth",
+      "purchase-order",
+      "custom-document",
+      "transport-security"
+    ],
+    "read_operations": [
+      "runSelfcheck",
+      "listPurchaseOrders",
+      "getPurchaseOrder",
+      "listCustomDocuments",
+      "getTransportPolicy"
+    ],
+    "write_operations": [
+      "login",
+      "switchAuthMode",
+      "createPurchaseDraft",
+      "submitPurchaseOrder",
+      "approvePurchaseOrder",
+      "createCustomDocument"
+    ]
+  },
+  "states": [
+    "loading",
+    "empty",
+    "error",
+    "populated"
+  ],
+  "brand_contract": null,
+  "assembly": {
+    "version": "b2b-assembly/v1",
+    "template_id": "dashboard-page-console",
+    "template_path": "page-generation/html-templates/foundation-cloud.html",
+    "template_sha256": "b09578ab03e8b5040f043dcf10393606994fd032936b2cd7be382e1de722e83a",
+    "shell_template_id": "shell-foundation-cloud",
+    "shell_template_path": "page-generation/html-templates/foundation-cloud.html",
+    "shell_template_sha256": "b09578ab03e8b5040f043dcf10393606994fd032936b2cd7be382e1de722e83a",
+    "shell_profile": "banlan-foundation-cloud-default",
+    "provider_package_sha256": "fa1b7e2a52aac18f9053861c1bd6ed08915416c1c600057c9e057c93b1b694a9",
+    "allowed_business_slots": [
+      "navigation_items",
+      "title",
+      "description",
+      "data",
+      "filters",
+      "columns",
+      "row_actions",
+      "batch_actions",
+      "states"
+    ],
+    "required_structure": [
+      "Menu",
+      "Statistic",
+      "Card",
+      "Table"
+    ],
+    "required_state_matrix": [
+      "loading",
+      "empty",
+      "error",
+      "populated"
+    ],
+    "theme_policy": "provider-default-only",
+    "runtime_integration": {
+      "mode": "banlan-html-babel-react-kit-to-static-export/v2",
+      "development_authoring": "HTML + Babel + React",
+      "development_kit": "@baidu/qianfan-antd-kit",
+      "development_vendor": "local prototype/vendor (development-only)",
+      "authoring_import": "@baidu/qianfan-antd-kit",
+      "authoring_template": "Banlan HTML template with local import map and Babel module script",
+      "kit_vendor": "vendor/qianfan-antd-kit.js",
+      "kit_stylesheet": "vendor/qianfan-antd-kit.css",
+      "static_check": "check.mjs",
+      "template_binding": "assembly-hash-pinned",
+      "development_preview": "served-production-build",
+      "finalization": "static-export-single-html",
+      "browser_babel_vendor": "development-only",
+      "final_artifact_runtime": "compiled-and-inline-single-html",
+      "external_network": "forbidden"
+    }
+  },
+  "validation_plan": {
+    "source_checks": [
+      "preflight-route",
+      "delivery-gate",
+      "navigation-guard",
+      "provider-guard"
+    ],
+    "build_checks": [
+      "static-export",
+      "verify-static-export"
+    ],
+    "browser_checks": [
+      "six-viewport chrome evidence",
+      "interaction smoke"
+    ]
+  },
+  "navigation_profile": "banlan-foundation-cloud-default",
+  "shell_profile": "banlan-foundation-cloud-default",
+  "shell_source": "user-explicit",
+  "navigation_source": "product-ia",
+  "navigation_items": [
+    {
+      "key": "overview",
+      "label": "操作台总览",
+      "path": "/overview"
+    },
+    {
+      "key": "selfcheck",
+      "label": "部署自检",
+      "path": "/selfcheck"
+    },
+    {
+      "key": "auth",
+      "label": "登录鉴权",
+      "path": "/auth"
+    },
+    {
+      "key": "purchase",
+      "label": "采购订单",
+      "path": "/purchase"
+    },
+    {
+      "key": "customdoc",
+      "label": "自定义单据",
+      "path": "/custom-doc"
+    },
+    {
+      "key": "security",
+      "label": "传输安全策略",
+      "path": "/security"
+    }
+  ],
+  "active_navigation_key": "overview",
+  "host_shell_override": null,
+  "top_navigation": "required",
+  "content_surface": "provider-default",
+  "blocked_routes": [],
+  "next_action": "run-banlan-workflow-preflight-or-scaffold-before-implementation"
+}

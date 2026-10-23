@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KingdeeSky.DevKit 部署到金蝶云·星空 V9.1 服务器操作手册</title>
+<style>
+  :root { --ink:#1f2d3d; --brand:#0f3d6e; --brand2:#2f7ad1; --line:#cbd6e2; --line2:#dbe6f0; --soft:#f7fafd; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#eef2f7; color:var(--ink);
+         font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+         line-height:1.8; font-size:15px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:960px; margin:0 auto; padding:32px 16px 64px; }
+  .doc { background:#fff; border-radius:10px; box-shadow:0 2px 18px rgba(15,61,110,.08); padding:48px 56px 56px; }
+  h1 { font-size:26px; line-height:1.5; text-align:center; color:var(--brand);
+       border-bottom:3px solid var(--brand); padding-bottom:18px; margin:0 0 30px; letter-spacing:.5px; }
+  h2 { font-size:20px; color:var(--brand); margin:40px 0 14px; padding:4px 0 4px 12px;
+       border-left:5px solid var(--brand2); }
+  h3 { font-size:16.5px; color:#173a5e; margin:26px 0 10px; }
+  h4 { font-size:15px; color:#1b4b7d; margin:20px 0 8px; }
+  p { margin:10px 0; }
+  strong { color:#0b2a47; }
+  a { color:#1b5e9e; }
+  table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; }
+  th { background:#eaf1f9; color:var(--brand); font-weight:600; white-space:nowrap; }
+  tbody tr:nth-child(even) { background:var(--soft); }
+  code { font-family:Consolas,"Courier New",monospace; background:#f0f4f8; padding:2px 6px;
+         border-radius:4px; font-size:13px; color:#b02a37; word-break:break-all; }
+  pre { background:#0f2b46; color:#e6edf3; padding:16px 18px; border-radius:8px;
+        overflow-x:auto; line-height:1.6; margin:16px 0; }
+  pre code { background:transparent; color:inherit; padding:0; font-size:13px; word-break:normal; }
+  blockquote { margin:16px 0; padding:12px 18px; background:#fff8e1; border-left:5px solid #e6a817;
+               border-radius:0 6px 6px 0; }
+  blockquote p { margin:4px 0; }
+  ol, ul { padding-left:26px; margin:10px 0; }
+  li { margin:6px 0; }
+  hr { border:none; border-top:1px solid var(--line2); margin:28px 0; }
+  nav#TOC { background:var(--soft); border:1px solid var(--line2); border-radius:8px;
+            padding:16px 24px 18px; margin:0 0 32px; }
+  nav#TOC::before { content:"目 录"; display:block; font-weight:600; color:var(--brand);
+                    margin-bottom:8px; font-size:15px; letter-spacing:2px; }
+  nav#TOC ul { list-style:none; padding-left:18px; margin:4px 0; }
+  nav#TOC > ul { padding-left:0; }
+  nav#TOC li { margin:3px 0; }
+  nav#TOC a { color:#1b5e9e; text-decoration:none; }
+  nav#TOC a:hover { text-decoration:underline; }
+  @media print {
+    body { background:#fff; font-size:12pt; }
+    .wrap { padding:0; max-width:none; }
+    .doc { box-shadow:none; border-radius:0; padding:0; }
+    h2 { break-after:avoid; } table, pre, blockquote { break-inside:avoid; }
+  }
+  @media (max-width:640px) {
+    .doc { padding:24px 18px 32px; } h1 { font-size:21px; } h2 { font-size:18px; }
+    .wrap { padding:16px 10px 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<article class="doc">
+<h1>KingdeeSky.DevKit 部署到金蝶云·星空 V9.1 服务器操作手册</h1>
+<nav id="TOC"><ul>
+<li><a href="#1-手册说明与部署总览" id="toc-1-手册说明与部署总览">1
+手册说明与部署总览</a>
+<ul>
+<li><a href="#11-适用范围" id="toc-11-适用范围">1.1 适用范围</a></li>
+<li><a href="#12-两类组件两套部署动作"
+id="toc-12-两类组件两套部署动作">1.2 两类组件，两套部署动作</a></li>
+<li><a href="#13-部署总流程" id="toc-13-部署总流程">1.3
+部署总流程</a></li>
+</ul></li>
+<li><a href="#2-部署前准备" id="toc-2-部署前准备">2 部署前准备</a>
+<ul>
+<li><a href="#21-环境与软件要求" id="toc-21-环境与软件要求">2.1
+环境与软件要求</a></li>
+<li><a href="#22-账号与权限准备" id="toc-22-账号与权限准备">2.2
+账号与权限准备</a></li>
+<li><a href="#23-备份与实施窗口" id="toc-23-备份与实施窗口">2.3
+备份与实施窗口</a></li>
+</ul></li>
+<li><a href="#3-构建与打包" id="toc-3-构建与打包">3 构建与打包</a>
+<ul>
+<li><a href="#31-一键构建" id="toc-31-一键构建">3.1 一键构建</a></li>
+<li><a href="#32-获取金蝶-bos-dll-并编译插件"
+id="toc-32-获取金蝶-bos-dll-并编译插件">3.2 获取金蝶 BOS DLL
+并编译插件</a></li>
+<li><a href="#33-交付包内容说明" id="toc-33-交付包内容说明">3.3
+交付包内容说明</a></li>
+</ul></li>
+<li><a href="#4-服务端插件部署" id="toc-4-服务端插件部署">4
+服务端插件部署</a>
+<ul>
+<li><a href="#41-创建审计表" id="toc-41-创建审计表">4.1
+创建审计表</a></li>
+<li><a href="#42-拷贝插件-dll-到站点-bin"
+id="toc-42-拷贝插件-dll-到站点-bin">4.2 拷贝插件 DLL 到站点 bin</a></li>
+<li><a href="#43-让新-dll-生效" id="toc-43-让新-dll-生效">4.3 让新 DLL
+生效</a></li>
+<li><a href="#44-在-bos-设计器中注册插件"
+id="toc-44-在-bos-设计器中注册插件">4.4 在 BOS 设计器中注册插件</a></li>
+<li><a href="#45-插件部署验证清单" id="toc-45-插件部署验证清单">4.5
+插件部署验证清单</a></li>
+</ul></li>
+<li><a href="#5-webapi-客户端部署" id="toc-5-webapi-客户端部署">5 WebAPI
+客户端部署</a>
+<ul>
+<li><a href="#51-部署位置与文件" id="toc-51-部署位置与文件">5.1
+部署位置与文件</a></li>
+<li><a href="#52-修改非敏感配置" id="toc-52-修改非敏感配置">5.2
+修改非敏感配置</a></li>
+<li><a href="#53-注入密钥" id="toc-53-注入密钥">5.3 注入密钥</a></li>
+<li><a href="#54-运行与菜单验证" id="toc-54-运行与菜单验证">5.4
+运行与菜单验证</a></li>
+</ul></li>
+<li><a href="#6-部署后验证" id="toc-6-部署后验证">6 部署后验证</a>
+<ul>
+<li><a href="#61-运行自检" id="toc-61-运行自检">6.1 运行自检</a></li>
+<li><a href="#62-冒烟测试" id="toc-62-冒烟测试">6.2 冒烟测试</a></li>
+<li><a href="#63-日志与观测" id="toc-63-日志与观测">6.3
+日志与观测</a></li>
+</ul></li>
+<li><a href="#7-回滚与卸载" id="toc-7-回滚与卸载">7 回滚与卸载</a>
+<ul>
+<li><a href="#71-回滚触发条件" id="toc-71-回滚触发条件">7.1
+回滚触发条件</a></li>
+<li><a href="#72-插件回滚" id="toc-72-插件回滚">7.2 插件回滚</a></li>
+<li><a href="#73-webapi-客户端回滚" id="toc-73-webapi-客户端回滚">7.3
+WebAPI 客户端回滚</a></li>
+<li><a href="#74-数据库脚本回滚" id="toc-74-数据库脚本回滚">7.4
+数据库脚本回滚</a></li>
+<li><a href="#75-卸载" id="toc-75-卸载">7.5 卸载</a></li>
+</ul></li>
+<li><a href="#8-常见问题faq" id="toc-8-常见问题faq">8
+常见问题（FAQ）</a></li>
+<li><a href="#9-附录速查" id="toc-9-附录速查">9 附录：速查</a>
+<ul>
+<li><a href="#91-插件注册字符串bos-插件注册框"
+id="toc-91-插件注册字符串bos-插件注册框">9.1 插件注册字符串（BOS
+插件注册框）</a></li>
+<li><a href="#92-关键命令与路径" id="toc-92-关键命令与路径">9.2
+关键命令与路径</a></li>
+<li><a href="#93-部署检查清单可逐项勾选"
+id="toc-93-部署检查清单可逐项勾选">9.3
+部署检查清单（可逐项勾选）</a></li>
+</ul></li>
+</ul></nav>
+<h2 id="1-手册说明与部署总览">1 手册说明与部署总览</h2>
+<h3 id="11-适用范围">1.1 适用范围</h3>
+<p>本手册面向将 KingdeeSky.DevKit
+二开示例工程部署到<strong>自行部署的经典金蝶云·星空 V9.1</strong>（.NET
+Framework 4.8 + IIS）服务器环境，覆盖服务端插件与 WebAPI
+客户端两类组件的部署、验证与回滚。</p>
+<p>适用于企业版/标准版私有部署环境。公有云租户可参照第 5 章部署 WebAPI
+客户端；插件侧须以服务商提供的部署通道为准。</p>
+<blockquote>
+<p><strong>版本锁定</strong>：本工程锁定星空
+V9.1。插件与星空版本强绑定，请使用与目标环境<strong>补丁版本一致</strong>的
+BOS 程序集；升级环境补丁后必须重新拷贝
+DLL、重新编译，禁止混用其它版本程序集。</p>
+</blockquote>
+<h3 id="12-两类组件两套部署动作">1.2 两类组件，两套部署动作</h3>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>交付形态</th>
+<th>部署位置</th>
+<th>是否依赖金蝶 DLL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KingdeeSky.Plugins</td>
+<td>服务端插件类库</td>
+<td>星空站点 <code>WebSite\bin</code> + BOS 设计器注册</td>
+<td>编译期需要（不外发）</td>
+</tr>
+<tr>
+<td>KingdeeSky.WebApiClient</td>
+<td>控制台绿色程序</td>
+<td>任意可访问星空站点的目录（建议独立目录或任务机）</td>
+<td>完全不需要</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-部署总流程">1.3 部署总流程</h3>
+<ol type="1">
+<li><strong>部署前准备</strong>：核对环境与软件要求，准备账号权限，备份账套库与管理库。</li>
+<li><strong>构建产出交付包</strong>：运行一键构建，得到版本化 ZIP
+包。</li>
+<li><strong>创建审计表</strong>：在<strong>账套库</strong>执行审计表脚本。</li>
+<li><strong>部署插件 DLL</strong>：拷贝
+<code>KingdeeSky.Plugins.dll</code> 到站点 <code>bin</code>，回收 IIS
+应用程序池。</li>
+<li><strong>注册插件</strong>：在 BOS 设计器中以“扩展”方式注册 8
+个插件类。</li>
+<li><strong>部署 WebAPI
+客户端</strong>：放到目标目录，修改非敏感配置，注入密钥。</li>
+<li><strong>自检与冒烟验证</strong>：运行
+<code>--selfcheck</code>，再跑通业务全流程。</li>
+<li><strong>记录基线</strong>：登记本次版本与上一版本包，作为回滚基线。</li>
+</ol>
+<h2 id="2-部署前准备">2 部署前准备</h2>
+<h3 id="21-环境与软件要求">2.1 环境与软件要求</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>星空环境</td>
+<td>已授权的经典星空 V9.1（私有部署、本机演示或单租户环境）</td>
+</tr>
+<tr>
+<td>目标框架</td>
+<td>.NET Framework 4.8（与星空 V9.1 对应）</td>
+</tr>
+<tr>
+<td>Web 服务器</td>
+<td>IIS（星空站点默认虚拟目录 <code>/K3Cloud/</code>）</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>SQL Server（审计表脚本为 SQL Server 语法）</td>
+</tr>
+<tr>
+<td>构建机</td>
+<td>可运行 <code>csc.exe</code>（.NET Framework 4.8）与
+MSBuild（编译插件时）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-账号与权限准备">2.2 账号与权限准备</h3>
+<ul>
+<li><strong>星空账号</strong>：具备 BOS
+设计器（动态建模平台）访问权限，用于注册插件。</li>
+<li><strong>WebAPI 账号</strong>：具备采购订单等业务对象权限，并被授予
+WebAPI 调用权限（第 5 章使用）。</li>
+<li><strong>数据库权限</strong>：对<strong>目标账套库</strong>有建表权限。</li>
+<li><strong>服务器权限</strong>：可写入站点 <code>bin</code>
+目录，可回收 IIS 应用程序池（管理员命令行可执行
+<code>iisreset</code>）。</li>
+</ul>
+<h3 id="23-备份与实施窗口">2.3 备份与实施窗口</h3>
+<ol type="1">
+<li>部署前对<strong>账套库</strong>与<strong>管理中心库</strong>做完整备份。</li>
+<li>选择业务低峰期实施，通知相关用户。</li>
+<li><strong>先在相同补丁版本的测试/演示环境完整演练一遍</strong>，确认无误后再上生产；生产与测试的补丁版本应保持一致。</li>
+</ol>
+<h2 id="3-构建与打包">3 构建与打包</h2>
+<h3 id="31-一键构建">3.1 一键构建</h3>
+<p>在仓库根目录执行：</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode cmd"><code class="sourceCode dosbat"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>build.bat</span></code></pre></div>
+<p>等价于
+<code>powershell -NoProfile -ExecutionPolicy Bypass -File eng\build.ps1</code>。脚本依次执行：</p>
+<ol type="1">
+<li>用 <code>csc</code> 编译 WebApiClient（Release，零金蝶 DLL
+依赖）；</li>
+<li>运行<strong>测试门禁</strong>（37 个用例：鉴权 / 密钥来源 / 配置分层
+/ 客户端调用链），任一失败立即中断并返回非 0；</li>
+<li>若 <code>lib\</code> 下已有所需 BOS DLL，则自动用 MSBuild
+追加编译插件；</li>
+<li>产出版本化 ZIP 到 <code>artifacts\</code>。</li>
+</ol>
+<p>指定版本号：<code>build.bat 1.1.0</code>（不传则取
+<code>eng\version.txt</code>）。</p>
+<p>产物命名规则：</p>
+<pre><code>artifacts\KingdeeSky.DevKit-{版本号}-{yyyymmdd-HHMMSS}.zip</code></pre>
+<h3 id="32-获取金蝶-bos-dll-并编译插件">3.2 获取金蝶 BOS DLL
+并编译插件</h3>
+<p>插件工程必须引用金蝶 BOS 程序集才能编译，这些 DLL
+<strong>受金蝶许可协议保护，不能随示例代码分发</strong>，需从你拥有合法授权的星空应用服务器上拷贝：</p>
+<ol type="1">
+<li>在星空应用服务器上定位站点 <code>bin</code> 目录，常见位置为
+<code>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\</code>，或在
+IIS 管理器查看 K3Cloud 站点物理路径下的 <code>bin</code>。</li>
+<li>双击仓库
+<code>lib\copy-kingdee-dlls.bat</code>，按提示粘贴该路径，脚本会校验并复制
+4 个
+DLL：<code>Kingdee.BOS.dll</code>、<code>Kingdee.BOS.Core.dll</code>、<code>Kingdee.BOS.App.dll</code>、<code>Kingdee.BOS.Orm.dll</code>。</li>
+<li>再次运行 <code>build.bat</code>，脚本检测到 DLL 后会自动编译
+<code>KingdeeSky.Plugins</code> 并把 <code>KingdeeSky.Plugins.dll</code>
+打入交付包。</li>
+</ol>
+<blockquote>
+<p>工程引用通过 <code>$(KingdeeBinsDir)</code> 属性指向 BOS
+程序集目录（默认取 <code>lib\</code>）。需要从其它位置引用时用
+<code>msbuild KingdeeSky.Plugins.csproj /p:KingdeeBinsDir="D:\K3Cloud\WebSite\bin"</code>
+覆盖，无需改动工程文件。</p>
+</blockquote>
+<h3 id="33-交付包内容说明">3.3 交付包内容说明</h3>
+<p>交付包（ZIP）内主要成员如下：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WebApiClient\KingdeeSky.WebApiClient.exe(.config)</code></td>
+<td>WebAPI 客户端程序与其配置</td>
+</tr>
+<tr>
+<td><code>WebApiClient\App.config.example</code> /
+<code>secrets.env.example</code></td>
+<td>配置与密钥模板</td>
+</tr>
+<tr>
+<td><code>Plugins\</code></td>
+<td>已编译的插件 DLL 与 PDB（<code>lib\</code> 有 DLL 时才生成）</td>
+</tr>
+<tr>
+<td><code>deploy\</code></td>
+<td>部署与调试指南、自定义单据指南、转换与反写指南、回滚预案、审计表
+SQL</td>
+</tr>
+<tr>
+<td><code>lib\</code></td>
+<td>BOS DLL 清单说明与拷贝脚本</td>
+</tr>
+<tr>
+<td><code>README.md</code> / <code>VERSION.txt</code></td>
+<td>说明与本次版本号</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-服务端插件部署">4 服务端插件部署</h2>
+<h3 id="41-创建审计表">4.1 创建审计表</h3>
+<p>在 SQL Server Management Studio
+中<strong>选择目标账套数据库（不是管理中心库）</strong>，执行
+<code>deploy\Scripts\T_SKY_AUDITLOG.sql</code>。验证：</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> TOP <span class="dv">20</span> <span class="op">*</span> <span class="kw">FROM</span> dbo.T_SKY_AUDITLOG <span class="kw">ORDER</span> <span class="kw">BY</span> FId <span class="kw">DESC</span>;</span></code></pre></div>
+<p>若不需要审计示例，可跳过本步，并在 BOS
+中不注册对应的审核操作插件，其余插件不受影响。</p>
+<h3 id="42-拷贝插件-dll-到站点-bin">4.2 拷贝插件 DLL 到站点 bin</h3>
+<ol type="1">
+<li>取交付包 <code>Plugins\KingdeeSky.Plugins.dll</code>（调试期连同
+<code>.pdb</code> 一起）。</li>
+<li>拷贝到星空站点的 <code>WebSite\bin</code> 目录（与第 3.2 步取 DLL
+的同一目录）。</li>
+<li>只拷贝
+<code>KingdeeSky.Plugins.dll/.pdb</code>，<strong>不要</strong>把
+<code>Kingdee.BOS.*.dll</code> 拷进站点 <code>bin</code>（工程引用已设置
+<code>Private=False</code>，编译输出中本就不含它们）。</li>
+</ol>
+<blockquote>
+<p><strong>多应用服务器（集群）</strong>：每一台 APP 服务器的站点
+<code>bin</code> 都要拷贝，缺一台就可能间歇性报“找不到插件类”。</p>
+</blockquote>
+<h3 id="43-让新-dll-生效">4.3 让新 DLL 生效</h3>
+<ul>
+<li><strong>热更新（替换已有 DLL 时）</strong>：示例类已标记
+<code>[HotUpdate]</code>。需先在站点
+<code>WebSite\App_Data\Common.config</code> 确认
+<code>IsEnablePlugInHotUpdate=true</code>（部分补丁版本默认关闭）；开启后，对约
+1 小时内替换的 DLL 直接生效，无需重启。</li>
+<li><strong>首次部署（bin 中原本没有该
+DLL）</strong>：必须回收程序池/重启 IIS，热更新只对“替换已有
+DLL”有效。</li>
+<li><strong>回收方式</strong>：IIS 管理器 → 应用程序池 → 回收 K3Cloud
+对应程序池；或管理员命令行执行 <code>iisreset</code>。</li>
+</ul>
+<h3 id="44-在-bos-设计器中注册插件">4.4 在 BOS 设计器中注册插件</h3>
+<ol type="1">
+<li>登录星空客户端或 HTML5 端，主控台搜索并打开 <strong>BOS
+设计器</strong>（动态建模平台）。</li>
+<li>标准单据（采购订单）：在业务领域展开 <strong>采购管理</strong> →
+找到
+<strong>采购订单</strong>（FormId：<code>PUR_PurchaseOrder</code>）→
+右键 →
+<strong>扩展</strong>（不要直接改标准单据，扩展元数据在升级补丁时不被覆盖）。</li>
+<li>在扩展表单上按类型注册插件：表单插件在 <strong>编辑 →
+表单插件</strong>；保存校验器在 <strong>编辑 → 操作列表 → 保存（Save）→
+校验器/操作校验</strong>；审核操作插件在 <strong>编辑 → 操作列表 →
+审核（Audit）→ 服务插件</strong>。</li>
+<li>注册框内填写“类全名, 程序集名”，可注册字符串见第 9
+章速查表；自定义单据与转换/反写插件的注册入口不同（见
+<code>deploy\</code> 下对应指南）。</li>
+<li>保存扩展元数据，列表中出现扩展与插件注册项即成功。</li>
+</ol>
+<blockquote>
+<p>注册时下拉列表为空或找不到类：多为 DLL 未放到站点
+<code>bin</code>，或类不是 <code>public</code>、缺少无参构造函数，或 DLL
+编译框架版本高于目标环境。</p>
+</blockquote>
+<h3 id="45-插件部署验证清单">4.5 插件部署验证清单</h3>
+<ul class="task-list">
+<li><label><input
+type="checkbox" />新建采购订单：表头备注出现插件写入的默认文字；</label></li>
+<li><label><input
+type="checkbox" />新增分录行：需求日期按插件规则自动填充；</label></li>
+<li><label><input
+type="checkbox" />修改数量或含税单价：价税合计自动重算；负数被纠正并提示；</label></li>
+<li><label><input type="checkbox" />保存时：数量为
+0/为空、物料为空、需求日期早于今天，分别收到行级错误；</label></li>
+<li><label><input type="checkbox" />审核：界面层先拦截；绕过界面（如
+WebAPI 建单后审核）时，服务端操作插件再次拦截；</label></li>
+<li><label><input
+type="checkbox" />审核成功：<code>T_SKY_AUDITLOG</code> 表新增一条 Audit
+记录，操作人/单据编号正确。</label></li>
+</ul>
+<h2 id="5-webapi-客户端部署">5 WebAPI 客户端部署</h2>
+<h3 id="51-部署位置与文件">5.1 部署位置与文件</h3>
+<p>WebApiClient 是绿色控制台程序，不在服务器写任何数据。将交付包
+<code>WebApiClient\</code> 下的
+<code>KingdeeSky.WebApiClient.exe</code>、<code>KingdeeSky.WebApiClient.exe.config</code>
+复制到目标目录（例如任务机
+<code>D:\apps\kingdee-webapi-client\</code>）。</p>
+<h3 id="52-修改非敏感配置">5.2 修改非敏感配置</h3>
+<p>编辑
+<code>KingdeeSky.WebApiClient.exe.config</code>，只改站点与业务参数，<strong>不要</strong>写入任何密码：</p>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ServerUrl</code></td>
+<td>站点根地址，私有部署填
+<code>http://{服务器IP}/K3Cloud/</code>，公有云填租户站点地址（形如
+<code>https://{站点名}.kdcloud.com/</code>）</td>
+</tr>
+<tr>
+<td><code>AcctId</code></td>
+<td>数据中心（账套）ID</td>
+</tr>
+<tr>
+<td><code>UserName</code></td>
+<td>调用账号（需有业务权限与 WebAPI 授权）</td>
+</tr>
+<tr>
+<td><code>Lcid</code></td>
+<td>2052 简体中文 / 1028 繁体 / 1033 英文</td>
+</tr>
+<tr>
+<td><code>AuthMode</code></td>
+<td><code>password</code>（默认）/ <code>oauth2</code> /
+<code>appsec</code></td>
+</tr>
+<tr>
+<td><code>SecretStore</code></td>
+<td><code>env</code>（默认）/ <code>file</code> / <code>dpapi</code> /
+<code>kms</code></td>
+</tr>
+<tr>
+<td><code>OrgNumber</code> 等</td>
+<td>仅建单场景需要，填账套内真实组织/供应商/物料/单据类型编号</td>
+</tr>
+</tbody>
+</table>
+<p><strong>账套 ID（AcctId）怎么查</strong>：私有部署在管理中心库执行
+<code>SELECT FDATACENTERID, FNAME FROM dbo.T_BAS_DATACENTER;</code>；公有云在登录页选择数据中心后从页面或
+URL 获取；不确定时先用主控台【公共设置 → 动态服务定义 →
+WebAPI】的在线测试页试登录，能登录的参数照搬即可。</p>
+<h3 id="53-注入密钥">5.3 注入密钥</h3>
+<p>密钥值只经密钥源注入，配置文件中只保留<strong>键名</strong>（默认
+<code>KINGDEE_PASSWORD</code> 等）。按 <code>SecretStore</code>
+选择一种方式：</p>
+<table>
+<thead>
+<tr>
+<th>密钥源</th>
+<th>适用场景</th>
+<th>注入方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>env</code></td>
+<td>开发机 / CI</td>
+<td>设置环境变量
+<code>KINGDEE_PASSWORD</code>（Windows：<code>set</code>；Linux：<code>export</code>）</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td>仅开发</td>
+<td>在仓库之外维护明文密钥文件，按 <code>secrets.env.example</code>
+格式，<code>SecretsFile</code> 指向它</td>
+</tr>
+<tr>
+<td><code>dpapi</code></td>
+<td>本地部署生产（推荐）</td>
+<td>用 Windows DPAPI 加密后的密钥文件，<code>DpapiFile</code>
+指向它，<code>DpapiScope</code> 选 <code>CurrentUser</code> 或
+<code>LocalMachine</code></td>
+</tr>
+<tr>
+<td><code>kms</code></td>
+<td>有 KMS/Vault 的环境</td>
+<td><code>KmsBaseUrl</code> 指向密钥服务，访问令牌存于
+<code>KmsTokenKey</code> 指定的环境变量</td>
+</tr>
+</tbody>
+</table>
+<p>生产环境推荐 <code>dpapi</code>（本地部署）或
+<code>kms</code>（有统一密钥服务）；<code>env</code>/<code>file</code>
+仅用于开发，不要在生产长期使用。</p>
+<h3 id="54-运行与菜单验证">5.4 运行与菜单验证</h3>
+<p>运行
+<code>KingdeeSky.WebApiClient.exe</code>。启动即登录，页头显示本次鉴权方式与密钥来源，随后进入交互菜单：</p>
+<ol type="1">
+<li>查询最近 10
+张采购订单（只依赖登录成功，<strong>建议先跑通此项</strong>验证连通性）；</li>
+<li>新建采购订单（保存为草稿，依赖组织/供应商/物料/单据类型编号）；</li>
+<li>对指定内码单据执行提交 + 审核；</li>
+<li>一键全流程：查询 → 建单 → 提交 → 审核 → 查看完整数据包。</li>
+</ol>
+<h2 id="6-部署后验证">6 部署后验证</h2>
+<h3 id="61-运行自检">6.1 运行自检</h3>
+<p>在部署目录执行：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode cmd"><code class="sourceCode dosbat"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>KingdeeSky.WebApiClient.exe -<span class="at">-selfcheck</span></span></code></pre></div>
+<p>自检以结构化 key=value 输出四类检查（版本 / 配置 / 密钥源 / 鉴权组件
+/ 传输层），<strong>不发起网络请求、不输出密钥值</strong>：返回码
+<code>0</code> 表示全部就绪，<code>1</code>
+表示存在未就绪项（逐项给出原因）。建议把该命令接入 CI
+或部署脚本作为预检门禁。</p>
+<h3 id="62-冒烟测试">6.2 冒烟测试</h3>
+<ol type="1">
+<li><code>--selfcheck</code> 返回 0；</li>
+<li>运行客户端，菜单 1 查询成功；</li>
+<li>菜单 4 一键全流程跑通（建单 → 提交 → 审核 →
+查看），状态流转正确；</li>
+<li>插件侧按第 4.5 节清单逐项验证。</li>
+</ol>
+<h3 id="63-日志与观测">6.3 日志与观测</h3>
+<ul>
+<li>程序日志经 <code>SafeLogger</code>
+自动对已登记密钥脱敏，控制台与可选日志文件中的密钥均显示为掩码，确认日志中无明文密钥。</li>
+<li>插件侧审计写入可在 <code>T_SKY_AUDITLOG</code> 表中核对。</li>
+<li>记录本次部署的版本号与交付包文件名，作为下一次回滚的基线。</li>
+</ul>
+<h2 id="7-回滚与卸载">7 回滚与卸载</h2>
+<h3 id="71-回滚触发条件">7.1 回滚触发条件</h3>
+<p>满足任意一条即启动回滚（先恢复服务，再离线排查）：<code>--selfcheck</code>
+FAIL 且 10
+分钟内无法修复；登录成功率显著下降或不可用；关键业务（保存/提交/审核/下推）大面积报错且与本次发布相关；出现数据异常迹象（重复建单、反写错乱、审计缺失）。</p>
+<p>有完整回滚预案见交付包
+<code>deploy\回滚预案.md</code>，本节为要点摘录。</p>
+<h3 id="72-插件回滚">7.2 插件回滚</h3>
+<ol type="1">
+<li>备份当前
+<code>WebSite\bin\KingdeeSky.Plugins.dll</code>（保留现场）；</li>
+<li>用上一版本 DLL 覆盖；</li>
+<li>回收 IIS 应用程序池/重启站点；</li>
+<li>在 BOS 设计器核对插件注册；冒烟单据全流程。</li>
+</ol>
+<h3 id="73-webapi-客户端回滚">7.3 WebAPI 客户端回滚</h3>
+<ol type="1">
+<li>找到上一版本包
+<code>artifacts\KingdeeSky.DevKit-{上一版本}-*.zip</code>（<strong>发布纪律要求至少保留最近
+2 个版本包</strong>）；</li>
+<li>停用调用方，备份当前版本；</li>
+<li>用上一版本覆盖 <code>exe</code> 与 <code>.exe.config</code>；</li>
+<li>运行 <code>--selfcheck</code> 确认返回 0，再启用调用方并冒烟。</li>
+</ol>
+<h3 id="74-数据库脚本回滚">7.4 数据库脚本回滚</h3>
+<p>审计表 <code>T_SKY_AUDITLOG</code>
+仅新增、不回改业务表。确认无程序写入后执行：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode sql"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">DROP</span> <span class="kw">TABLE</span> dbo.T_SKY_AUDITLOG;</span></code></pre></div>
+<p>涉及业务表结构的脚本必须成对提供正向与反向脚本，升级脚本应保持幂等。</p>
+<h3 id="75-卸载">7.5 卸载</h3>
+<ol type="1">
+<li>BOS
+设计器扩展中移除插件注册，或停用/删除扩展，恢复标准单据行为；</li>
+<li>从站点 <code>bin</code> 删除
+<code>KingdeeSky.Plugins.dll/.pdb</code>，回收应用程序池；</li>
+<li>审计表可保留或删除；</li>
+<li>WebAPI 客户端为绿色程序，直接删除目录即可。</li>
+</ol>
+<h2 id="8-常见问题faq">8 常见问题（FAQ）</h2>
+<p><strong>Q1：构建时报“未能找到类型或命名空间名 Kingdee”？</strong>
+A：<code>lib\</code> 目录还没有金蝶 BOS DLL。运行
+<code>lib\copy-kingdee-dlls.bat</code>，确认 4 个 DLL
+与清单一致后重新构建。仅部署 WebApiClient 时可忽略并入包。</p>
+<p><strong>Q2：BOS 注册插件时列表里看不到我的类？</strong>
+A：依次排查：DLL 未放到站点 <code>bin</code>；类不是
+<code>public</code>；缺少无参构造函数；DLL 编译框架版本高于环境（如用
+4.8 编译却部署到只装了 4.5 的环境）。</p>
+<p><strong>Q3：改了插件代码重新部署没反应？</strong> A：先确认 DLL
+文件时间已更新；回收 K3Cloud 应用程序池或执行
+<code>iisreset</code>；集群环境逐台核对。</p>
+<p><strong>Q4：登录返回 LoginResultType 不是 1？</strong>
+A：依次排查账套 ID、账号密码、<code>Lcid</code>、该用户是否有 WebAPI
+权限、站点地址是否带正确虚拟目录（默认 <code>/K3Cloud/</code>）、HTTPS
+证书是否被拦截；程序已打印失败响应原文，按 Message 定位。</p>
+<p><strong>Q5：Save 返回“字段不存在/基础资料不存在”？</strong>
+A：多为基础资料编号（FNumber）或字段 Key 与账套不符。先用 WebAPI
+在线测试页 View 一张已存在采购订单的真实数据包，对照修正配置。</p>
+<p><strong>Q6：可以在服务器上装 .NET Core / .NET 5+ 吗？</strong>
+A：经典星空不需要 .NET Core，误装可能导致 IIS 程序池异常；二开工程坚持
+.NET Framework（随星空版本，本工程为 4.8）。</p>
+<p><strong>Q7：生产部署有哪些硬性注意事项？</strong>
+A：先在同补丁版本的测试环境回归；备份账套库与管理库；二开元数据走部署包、DLL
+逐台 APP
+拷贝并记录版本；标准补丁升级后回归全部插件；自定义表使用独立前缀（示例
+<code>T_SKY_</code>），不要在金蝶标准表上加减列。</p>
+<h2 id="9-附录速查">9 附录：速查</h2>
+<h3 id="91-插件注册字符串bos-插件注册框">9.1 插件注册字符串（BOS
+插件注册框）</h3>
+<pre><code>KingdeeSky.Plugins.PurchaseOrder.PurchaseOrderFormPlugin, KingdeeSky.Plugins
+KingdeeSky.Plugins.PurchaseOrder.PurchaseOrderSaveValidator, KingdeeSky.Plugins
+KingdeeSky.Plugins.PurchaseOrder.PurchaseOrderAuditOpPlugin, KingdeeSky.Plugins
+KingdeeSky.Plugins.CustomBill.ExpReimburseFormPlugin, KingdeeSky.Plugins
+KingdeeSky.Plugins.CustomBill.ExpReimburseSaveValidator, KingdeeSky.Plugins
+KingdeeSky.Plugins.CustomBill.ExpReimburseAuditOpPlugin, KingdeeSky.Plugins
+KingdeeSky.Plugins.Convert.PurchaseOrderToInStockConvertPlugin, KingdeeSky.Plugins
+KingdeeSky.Plugins.Convert.PurchaseInStockWriteBackPlugin, KingdeeSky.Plugins</code></pre>
+<h3 id="92-关键命令与路径">9.2 关键命令与路径</h3>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>命令 / 路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一键构建</td>
+<td><code>build.bat [版本号]</code></td>
+</tr>
+<tr>
+<td>单独跑测试门禁</td>
+<td><code>tests\run-tests.bat</code></td>
+</tr>
+<tr>
+<td>运行自检</td>
+<td><code>KingdeeSky.WebApiClient.exe --selfcheck</code></td>
+</tr>
+<tr>
+<td>拷贝 BOS DLL</td>
+<td><code>lib\copy-kingdee-dlls.bat</code></td>
+</tr>
+<tr>
+<td>创建审计表</td>
+<td><code>deploy\Scripts\T_SKY_AUDITLOG.sql</code>（在账套库执行）</td>
+</tr>
+<tr>
+<td>回滚预案</td>
+<td><code>deploy\回滚预案.md</code></td>
+</tr>
+<tr>
+<td>回收 IIS</td>
+<td>IIS 管理器回收程序池，或管理员命令行 <code>iisreset</code></td>
+</tr>
+<tr>
+<td>插件热更新开关</td>
+<td>站点 <code>WebSite\App_Data\Common.config</code> 的
+<code>IsEnablePlugInHotUpdate</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="93-部署检查清单可逐项勾选">9.3 部署检查清单（可逐项勾选）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />已备份账套库与管理库；</label></li>
+<li><label><input
+type="checkbox" />已在同补丁版本测试环境演练；</label></li>
+<li><label><input type="checkbox" /><code>build.bat</code>
+构建成功、测试门禁 37 用例全过，得到版本化 ZIP；</label></li>
+<li><label><input
+type="checkbox" />审计表已在<strong>账套库</strong>创建（如需要）；</label></li>
+<li><label><input type="checkbox" />插件 DLL
+已拷贝到<strong>每一台</strong>应用服务器的
+<code>WebSite\bin</code>；</label></li>
+<li><label><input type="checkbox" />已回收应用程序池或
+<code>iisreset</code>；</label></li>
+<li><label><input type="checkbox" />BOS
+设计器中插件注册完成且无缺类告警；</label></li>
+<li><label><input type="checkbox" />WebApiClient
+非敏感配置已核对，密钥已按所选密钥源注入；</label></li>
+<li><label><input type="checkbox" /><code>--selfcheck</code> 返回
+0，业务全流程冒烟通过；</label></li>
+<li><label><input
+type="checkbox" />已记录本次版本号与上一版本包，回滚基线就绪。</label></li>
+</ul>
+</article>
+</div>
+</body>
+</html>

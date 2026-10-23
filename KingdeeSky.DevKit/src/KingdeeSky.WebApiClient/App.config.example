@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App.config.example —— 新环境初始化模板（与 App.config 内容一致）
+  ================================================================
+  分层约定：
+  1. 非敏感项（站点地址、账套、用户、按钮开关、密钥键名）写入 App.config 并入库；
+  2. 密钥值一律不写入配置文件，由 ISecretProvider 提供（环境变量 / 本地密钥文件 / DPAPI / KMS）；
+  3. 直接把本文件复制为 App.config 即可作为默认开发配置；生产环境按“站点与账套”一节修改。
+  使用前请阅读同目录 README 与 Security 目录说明。
+-->
+<configuration>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" />
+  </startup>
+  <appSettings>
+    <!-- ================= 站点与账套（非敏感，可入库） ================= -->
+    <!-- 星空站点地址（公有云形如 https://xxx.kdcloud.com/；私有部署形如 http://应用服务器IP/K3Cloud/），结尾斜杠可加可不加 -->
+    <add key="ServerUrl" value="http://127.0.0.1/K3Cloud/" />
+    <!-- 数据中心（账套）ID：登录页数据中心列表可见；私有部署也可在管理中心库 T_BAS_DATACENTER 表查 FDATACENTERID -->
+    <add key="AcctId" value="请填写账套ID" />
+    <!-- 调用 WebAPI 的用户（需有对应业务对象的权限及 WebAPI 授权），默认管理员 Administrator -->
+    <add key="UserName" value="Administrator" />
+    <!-- 语言：2052=简体中文，1028=繁体中文，1033=英文 -->
+    <add key="Lcid" value="2052" />
+
+    <!-- ================= 鉴权与密钥来源（只放开关与键名，绝不放密钥值） ================= -->
+    <!-- AuthMode：password（账号密码，默认）| oauth2（OAuth 2.0 client_credentials）| appsec（AppID/AppSec 签名，待按版本补充） -->
+    <add key="AuthMode" value="password" />
+    <!-- SecretStore：env（环境变量，默认）| file（本地明文密钥文件，仅开发）| dpapi（Windows DPAPI 加密文件，本地部署生产推荐）| kms（外部密钥服务） -->
+    <add key="SecretStore" value="env" />
+    <!-- SecretStore=file 时的明文密钥文件路径（必须在仓库之外，参考 .gitignore 与 secrets.env.example） -->
+    <add key="SecretsFile" value="" />
+    <!-- SecretStore=dpapi 时的密文文件路径与作用域（CurrentUser | LocalMachine） -->
+    <add key="DpapiFile" value="" />
+    <add key="DpapiScope" value="CurrentUser" />
+    <!-- SecretStore=kms 时的服务地址；访问令牌本身也是密钥，存放在下列环境变量中 -->
+    <add key="KmsBaseUrl" value="" />
+    <add key="KmsTokenKey" value="KINGDEE_KMS_TOKEN" />
+    <!-- 各密钥在密钥源中的键名（只写键名，值由密钥源提供） -->
+    <add key="PasswordKey" value="KINGDEE_PASSWORD" />
+    <add key="ClientIdKey" value="KINGDEE_CLIENT_ID" />
+    <add key="ClientSecretKey" value="KINGDEE_CLIENT_SECRET" />
+    <add key="AppIdKey" value="KINGDEE_APP_ID" />
+    <add key="AppSecretKey" value="KINGDEE_APP_SECRET" />
+    <!-- AuthMode=oauth2 时的令牌端点与可选 scope（按星空版本或统一认证网关填写） -->
+    <add key="TokenEndpoint" value="" />
+    <add key="Scope" value="" />
+    <!-- AuthMode=appsec 时的签名模板（按星空版本规范填写；留空则启用 appsec 会提示降级，可改用 password / oauth2） -->
+    <add key="AppSecSigningTemplate" value="" />
+
+    <!-- ================= 传输安全（本机可落地） ================= -->
+    <!-- AllowInsecureHttp：false（默认语义，代码默认值）= 强制 HTTPS；true = 显式放行明文 HTTP 并告警。
+         本模板默认 true 仅为方便本地对 mock/演示站点的联调；生产环境必须改为 false 并使用 HTTPS -->
+    <add key="AllowInsecureHttp" value="true" />
+    <!-- AllowInvalidCertificate：false（默认）= 完整校验服务器证书；true = 放行任意证书（仅本地调试，生产必须 false） -->
+    <add key="AllowInvalidCertificate" value="false" />
+
+    <!-- ================= 演示数据编号（非敏感，按实际账套修改） ================= -->
+    <!-- 采购组织 / 收货组织编号（演示账套常见 100） -->
+    <add key="OrgNumber" value="100" />
+    <!-- 供应商编号 -->
+    <add key="SupplierNumber" value="VEN001" />
+    <!-- 物料编号 -->
+    <add key="MaterialNumber" value="M001" />
+    <!-- 采购订单单据类型编号（标准环境常见 CGDD01_SYS，以账套实际为准） -->
+    <add key="BillTypeNumber" value="CGDD01_SYS" />
+
+    <!-- 菜单 5 自定义单据“差旅费报销单 SKY_ExpReimburse”可选字段：部门/员工编号，留空则不传 -->
+    <add key="DeptNumber" value="" />
+    <add key="EmpNumber" value="" />
+  </appSettings>
+</configuration>

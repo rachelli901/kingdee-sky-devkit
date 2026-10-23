@@ -1,0 +1,60 @@
+{
+  "ok": true,
+  "state": "delivery-ready",
+  "gate": "b2b-delivery",
+  "contract": {
+    "style": "dumate",
+    "style_label": "DuMate 风格",
+    "provider": "banlan",
+    "page_type": "dashboard",
+    "scope": "banlan-workspace",
+    "navigation_profile": "banlan-foundation-cloud-default",
+    "active_navigation_key": "overview"
+  },
+  "source_guard": {
+    "ok": true,
+    "provider": "banlan",
+    "root": "D:\\02.Project\\02.GitHub\\JinDie\\webapi-console\\prototype",
+    "analyzer": "source-ast/v1",
+    "filesScanned": 1,
+    "violations": []
+  },
+  "navigation_guard": {
+    "ok": true,
+    "provider": "banlan",
+    "navigation_profile": "banlan-foundation-cloud-default",
+    "active_navigation_key": "overview",
+    "analyzer": "source-ast/v1",
+    "filesScanned": 1,
+    "violations": []
+  },
+  "assembly_guard": {
+    "ok": true,
+    "provider": "banlan",
+    "page_type": "dashboard",
+    "analyzer": "source-ast/v1",
+    "filesScanned": 1,
+    "violations": []
+  },
+  "provider_contract": {
+    "version": "banlan-kit/v2",
+    "frameworkProfile": "banlan-html-babel-react-kit",
+    "frameworkMaturity": "kit-ready",
+    "pageContractEvidence": "kit-template"
+  },
+  "kit_contract": {
+    "verified_by": "banlan-kit-contract",
+    "package": "@baidu/qianfan-antd-kit",
+    "authoring": "HTML + Babel + React",
+    "vendor_policy": "local-only-development",
+    "static_check": "check.mjs",
+    "finalization": "compiled-and-inline-single-html",
+    "legacy_runtime": "removed",
+    "vendor": [
+      "vendor/qianfan-antd-kit.js",
+      "vendor/qianfan-antd-kit.css",
+      "vendor/babel.min.js",
+      "vendor/esm.sh/"
+    ]
+  }
+}

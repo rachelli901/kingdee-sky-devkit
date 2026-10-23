@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "调试：WebApiClient --selfcheck（.NET Framework 4.8）",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\src\\KingdeeSky.WebApiClient\\bin\\Release\\KingdeeSky.WebApiClient.exe",
+      "args": ["--selfcheck"],
+      "cwd": "${workspaceFolder}\\src\\KingdeeSky.WebApiClient\\bin\\Release",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "运行：WebApiClient 交互菜单（需先在 App.config 配好星空地址）",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\src\\KingdeeSky.WebApiClient\\bin\\Release\\KingdeeSky.WebApiClient.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}\\src\\KingdeeSky.WebApiClient\\bin\\Release",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "调试：测试运行器（62 条用例）",
+      "type": "clr",
+      "request": "launch",
+      "program": "${workspaceFolder}\\tests\\KingdeeSky.WebApiClient.Tests\\bin\\Debug\\KingdeeSky.WebApiClient.Tests.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}\\tests\\KingdeeSky.WebApiClient.Tests\\bin\\Debug",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}

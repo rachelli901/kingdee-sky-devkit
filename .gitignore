@@ -1,0 +1,54 @@
+# ============ JinDie 工作区忽略规则 ============
+# 定位：本文件位于工作区根（D:/02.Project/02.GitHub/JinDie），即仓库根。
+# 入库范围（本工作区只发布这 4 个项目目录）：
+#   KingdeeSky.DevKit/          金蝶云·星空二开示例包（源码 / 测试 / CI / 脚本）
+#   KingdeeSky.WebApiClient/    WebApiClient 可运行演示工程（含 mock_server.py 本地模拟服务）
+#   webapi-console/             WebApiClient 浏览器操作台（单文件产物的源工程）
+#   deploy/                     交付件（V9.1 部署操作手册.html、浏览器操作台.html）
+# 其余同级内容属于工作区中间态、个人资料或可再生成的产物，默认不入库。
+
+# ---- 工作区中间态 / 本地工具状态 ----
+.dumate/
+.tmp/
+.workbuddy/
+.ruff_cache/
+_shots/
+/.design-suite/
+
+# ---- 个人资料与研究笔记（默认不入库；如需发布，删除下面两行） ----
+docs/
+research/
+
+# ---- 日志 ----
+logs/
+*.log
+
+# ---- 构建产物（由源码与脚本再生成，不入库） ----
+bin/
+obj/
+artifacts/
+webapi-console/dist/
+*.user
+*.suo
+*.userprefs
+
+# ---- IDE / 系统 ----
+.vs/
+.idea/
+.kilo/
+.kilocode/
+*.swp
+Thumbs.db
+.DS_Store
+.vscode/settings.json
+
+# ---- 密钥与本地配置（严禁入库；非敏感模板 *.env.example 入库） ----
+secrets.env
+*.secrets.env
+App.config.local
+*.dpapi
+*.dpapi.json
+env/*.env
+
+# ---- 性能基线（机器生成，标记与保留策略见 deploy/SLA与备份恢复预案.md） ----
+perf/perf-baseline-*.txt
