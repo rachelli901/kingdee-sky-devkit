@@ -26,8 +26,20 @@ namespace KingdeeSky.WebApiClient.Tests
         [Test]
         public static void Validate_ThrowsOnPlaceholders()
         {
-            Settings s = Settings.Load();
-            Assert.Throws<InvalidOperationException>(() => s.ValidateOrThrow());
+            // 占位符校验：模板占位文字或空缺值都必须拒绝启动。
+            // 夹具自建、不读仓库 App.config —— 该文件为便于本地 mock 联调会写成真实站点与账套取值，
+            // 直接拿它断言占位符会让门禁结果随本地配置漂移。
+            Settings placeholder = new Settings
+            {
+                ServerUrl = "http://127.0.0.1/K3Cloud/",
+                AcctId = "请填写账套ID",
+                UserName = "Administrator"
+            };
+            Assert.Throws<InvalidOperationException>(() => placeholder.ValidateOrThrow());
+
+            // 空缺值同样视为未配置，必须报错
+            Settings blank = new Settings { ServerUrl = "", AcctId = "ABCDEFG", UserName = "Administrator" };
+            Assert.Throws<InvalidOperationException>(() => blank.ValidateOrThrow());
         }
 
         [Test]
