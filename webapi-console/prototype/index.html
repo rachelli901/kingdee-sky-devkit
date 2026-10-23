@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  WebApiClient 演示操作台 —— 单文件原型源码
+  Author: rachelli901 <rachelli901@users.noreply.github.com>
+  Repository: https://github.com/rachelli901/kingdee-sky-devkit
+-->
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -2054,7 +2059,51 @@ function Shell() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<Shell />);
+/* 作者水印：固定右下角、全页面可见；pointer-events 关闭，不拦截任何交互 */
+function AuthorWatermark() {
+  return (
+    <div
+      data-od-id="author-watermark"
+      data-author="rachelli901"
+      style={{
+        position: "fixed",
+        right: 14,
+        bottom: 12,
+        zIndex: 1200,
+        pointerEvents: "none",
+        userSelect: "none",
+        whiteSpace: "nowrap",
+        color: "inherit",
+        background: "rgba(140,140,140,0.14)",
+        backdropFilter: "blur(3px)",
+        WebkitBackdropFilter: "blur(3px)",
+        border: "1px solid rgba(140,140,140,0.30)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        borderRadius: 8,
+        padding: "5px 10px",
+        lineHeight: 1.45,
+        textAlign: "right",
+        fontSize: 11,
+        transform: "rotate(-1.5deg)",
+      }}
+    >
+      <div style={{ fontWeight: 700, fontSize: 12 }}>rachelli901</div>
+      <div>github.com/rachelli901/kingdee-sky-devkit</div>
+      <div>rachelli901@users.noreply.github.com</div>
+    </div>
+  );
+}
+
+function ShellWithWatermark() {
+  return (
+    <>
+      <Shell />
+      <AuthorWatermark />
+    </>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<ShellWithWatermark />);
 </script>
 </body>
 </html>

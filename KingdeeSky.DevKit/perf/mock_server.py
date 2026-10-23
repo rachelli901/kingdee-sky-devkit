@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 """
 金蝶云·星空 WebAPI 本地模拟服务（演示用，非金蝶官方）。
 

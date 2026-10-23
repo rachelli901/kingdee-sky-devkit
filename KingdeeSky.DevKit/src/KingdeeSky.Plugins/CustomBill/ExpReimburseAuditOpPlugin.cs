@@ -1,3 +1,6 @@
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 using System.Text;
 using Kingdee.BOS.Util;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;

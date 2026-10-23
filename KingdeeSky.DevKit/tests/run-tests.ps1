@@ -1,3 +1,6 @@
+# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 $ErrorActionPreference = 'Stop'
 # KingdeeSky.WebApiClient 测试门禁：编译（csc, .NET Framework 4.8）-> 复制 App.config -> 运行，失败即返回非 0
 # repo root: derived from this script's location (tests/) -> works for local and CI checkouts

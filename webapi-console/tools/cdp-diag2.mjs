@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 /**
  * Focused diagnosis: (a) antd Select interaction on /selfcheck, (b) result tags
  * on /security. Reuses the CDP harness pattern from cdp-verify.mjs.

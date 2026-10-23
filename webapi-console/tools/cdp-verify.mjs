@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 /**
  * Real-browser (Chrome DevTools Protocol) verification for the single-file
  * console. Launches headless Chrome on a unique temp profile, drives the page

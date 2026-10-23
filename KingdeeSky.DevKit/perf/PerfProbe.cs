@@ -1,3 +1,6 @@
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 // PerfProbe: 客户端侧性能冒烟探针，与 KingdeeSky.WebApiClient 源码一起编译（零金蝶 DLL 依赖）。
 // 场景：登录 1 次 + ExecuteBillQuery 循环 N 次，统计 min/avg/p95/max 延迟与失败数。
 // 用法：PerfProbe.exe [-url <serverUrl>] [-iterations <N>] [-thresholdMs <N>]

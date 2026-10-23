@@ -1,4 +1,7 @@
 @echo off
+rem Author: rachelli901 <rachelli901@users.noreply.github.com>
+rem Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 rem ============================================================
 rem  KingdeeSky.DevKit - one-click production build
 rem  delegates to eng\build.ps1 (compile -> test gate -> package)

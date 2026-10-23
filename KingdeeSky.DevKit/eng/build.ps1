@@ -1,3 +1,6 @@
+# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 # ============================================================
 #  KingdeeSky.DevKit - production build script
 #  Steps: secret scan -> compile WebApiClient (zero Kingdee deps)

@@ -1,3 +1,6 @@
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 using System.ComponentModel;
 using Kingdee.BOS.BusinessEntity.BusinessFlow;
 using Kingdee.BOS.Core.BusinessFlow.PlugIn;

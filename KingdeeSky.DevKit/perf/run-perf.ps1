@@ -1,3 +1,6 @@
+# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 # run-perf.ps1 - client-side performance smoke: start stub -> compile PerfProbe -> run -> save baseline.
 # ASCII-only (Windows PowerShell 5.1 safe; no Chinese string literals).
 # Usage:

@@ -238,6 +238,14 @@ KingdeeSky.DevKit/
 6. 插件工程引用金蝶 DLL 时已设置 `Private=False`（不复制到输出目录），
    **切勿把 `Kingdee.BOS.*.dll` 一起拷进站点 bin 覆盖标准程序集**。
 
+## 作者与署名
+
+- **作者**：rachelli901（<https://github.com/rachelli901>）
+- **邮箱**：rachelli901@users.noreply.github.com
+- **仓库**：<https://github.com/rachelli901/kingdee-sky-devkit>
+
+本仓库中的示例代码、测试、脚本、文档与 HTML 成品均由作者编写；第三方依赖与金蝶厂商资料的权属见上方「合规声明」。
+
 ## 官方资料入口（公开免费）
 
 - 产品帮助手册：<https://help.open.kingdee.com>

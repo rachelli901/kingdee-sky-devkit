@@ -74,3 +74,11 @@
 - `src/KingdeeSky.Plugins` 依赖金蝶 BOS 程序集（商业软件，不可分发），在**无授权星空环境**的机器上无法编译；
   在授权环境执行 `lib/copy-kingdee-dlls.bat` 取得 DLL 后，`build.bat` 会自动纳入 Plugins 编译。
 - 上述边界不改变分支与发布契约，但影响“哪些产物可在何环境构建”，须在交付说明中如实标注。
+
+## 7 作者与署名
+
+- **作者**：rachelli901（<https://github.com/rachelli901>）
+- **邮箱**：rachelli901@users.noreply.github.com
+- **仓库**：<https://github.com/rachelli901/kingdee-sky-devkit>
+
+提交者请保持署名与实际贡献者一致，勿删除本文件与各源文件中的作者声明。

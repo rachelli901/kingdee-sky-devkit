@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  WebApiClient 演示操作台 —— 单文件原型源码
+  Author: rachelli901 <rachelli901@users.noreply.github.com>
+  Repository: https://github.com/rachelli901/kingdee-sky-devkit
+-->
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -10192,7 +10197,44 @@ function Shell() {
     onClose: () => setLogOpen(false)
   }))));
 }
-(0, _client.createRoot)(document.getElementById("root")).render(/*#__PURE__*/_react.default.createElement(Shell, null));
+
+/* 作者水印：固定右下角、全页面可见；pointer-events 关闭，不拦截任何交互 */
+function AuthorWatermark() {
+  return /*#__PURE__*/_react.default.createElement("div", {
+    "data-od-id": "author-watermark",
+    "data-author": "rachelli901",
+    style: {
+      position: "fixed",
+      right: 14,
+      bottom: 12,
+      zIndex: 1200,
+      pointerEvents: "none",
+      userSelect: "none",
+      whiteSpace: "nowrap",
+      color: "inherit",
+      background: "rgba(140,140,140,0.14)",
+      backdropFilter: "blur(3px)",
+      WebkitBackdropFilter: "blur(3px)",
+      border: "1px solid rgba(140,140,140,0.30)",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+      borderRadius: 8,
+      padding: "5px 10px",
+      lineHeight: 1.45,
+      textAlign: "right",
+      fontSize: 11,
+      transform: "rotate(-1.5deg)"
+    }
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12
+    }
+  }, "rachelli901"), /*#__PURE__*/_react.default.createElement("div", null, "github.com/rachelli901/kingdee-sky-devkit"), /*#__PURE__*/_react.default.createElement("div", null, "rachelli901@users.noreply.github.com"));
+}
+function ShellWithWatermark() {
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(Shell, null), /*#__PURE__*/_react.default.createElement(AuthorWatermark, null));
+}
+(0, _client.createRoot)(document.getElementById("root")).render(/*#__PURE__*/_react.default.createElement(ShellWithWatermark, null));
 }, {"react":"esm.sh/react@18.3.1/__entry.js","react-dom/client":"esm.sh/react-dom@18.3.1/client/__entry.js","@baidu/qianfan-antd-kit":"qianfan-antd-kit.js","@ant-design/icons":"esm.sh/@ant-design/icons@6.1.0/__entry.js","antd/locale/zh_CN":"esm.sh/antd@5.29.3/locale/zh_CN/__entry.js"}],
 "esm.sh/react@18.3.1/__entry.js": [function (module, exports, require) {
 "use strict";

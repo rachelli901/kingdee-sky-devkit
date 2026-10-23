@@ -1,4 +1,7 @@
 @echo off
+rem Author: rachelli901 <rachelli901@users.noreply.github.com>
+rem Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 rem ============================================================
 rem  KingdeeSky.WebApiClient Demo Runner (Windows)
 rem  Starts the local mock server (port 18080) if not running,

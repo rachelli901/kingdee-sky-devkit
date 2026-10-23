@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Author: rachelli901 <rachelli901@users.noreply.github.com>
+// Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 /**
  * Offline single-file builder for the webapi-console (banlan provider).
  *

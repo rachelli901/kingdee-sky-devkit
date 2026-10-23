@@ -1,3 +1,6 @@
+# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 import urllib.request, urllib.error, json, http.client
 
 BASE = "http://127.0.0.1:18080/K3Cloud/"

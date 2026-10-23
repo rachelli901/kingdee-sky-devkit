@@ -1,3 +1,6 @@
+-- Author: rachelli901 <rachelli901@users.noreply.github.com>
+-- Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 /* ==============================================================================
    KingdeeSky.DevKit - 审核审计日志表（SQL Server）
    执行位置：目标“账套数据库”（不是管理中心库），在 SSMS 中选择对应业务库后执行。

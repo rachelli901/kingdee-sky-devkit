@@ -1,4 +1,7 @@
 @echo off
+rem Author: rachelli901 <rachelli901@users.noreply.github.com>
+rem Repository: https://github.com/rachelli901/kingdee-sky-devkit
+
 setlocal enabledelayedexpansion
 rem ============================================================
 rem  Copy Kingdee.BOS.* assemblies from a licensed K3Cloud server

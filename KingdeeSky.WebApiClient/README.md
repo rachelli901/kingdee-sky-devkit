@@ -126,3 +126,11 @@ copy App.config KingdeeSky.WebApiClient.exe.config
 
 - 本项目为学习/演示用途，非金蝶官方输出；`mock_server.py` 只是按公开的 WebAPI 调用形态复刻协议行为。
 - 不包含金蝶任何 DLL/二进制；从未授权环境获取的金蝶组件请遵守相应授权与合规要求。
+
+## 八、作者与署名
+
+- **作者**：rachelli901（<https://github.com/rachelli901>）
+- **邮箱**：rachelli901@users.noreply.github.com
+- **仓库**：<https://github.com/rachelli901/kingdee-sky-devkit>
+
+本仓库中的示例代码、测试、脚本、文档与 HTML 成品均由作者编写；第三方依赖与金蝶厂商资料的权属见上方「免责声明」。
