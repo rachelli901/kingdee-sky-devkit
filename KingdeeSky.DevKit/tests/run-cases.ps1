@@ -125,6 +125,15 @@ if ($List) {
 }
 
 # -- argument validation ----------------------------------------------------------------
+# PowerShell silently swallows unrecognised switches and hands them over in $args.
+# Without this guard `-Case TC-L1-001 -BadSwitch` would quietly run the full suite
+# and report success, hiding the caller's typo. Reject anything unrecognised.
+if ($args.Count -gt 0) {
+  [Console]::Error.WriteLine('Unrecognised argument(s): ' + ($args -join ' '))
+  [Console]::Error.WriteLine('Valid usage: -List | -All | -Case <id|method> | -Group <A-E>')
+  exit 2
+}
+
 $modeCount = 0
 if ($Case -ne '') { $modeCount++ }
 if ($Group -ne '') { $modeCount++ }

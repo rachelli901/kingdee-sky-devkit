@@ -49,14 +49,29 @@ function Resolve-RepoRoot([string]$start) {
     return (Resolve-Path -LiteralPath $probe).Path
 }
 
-# Default probe is the scanner's own location, not the caller's working directory:
-# the script always lives inside the repository it is meant to gate.
-$probeRoot = $Root
-if ([string]::IsNullOrWhiteSpace($probeRoot)) { $probeRoot = $PSScriptRoot }
-$Root = Resolve-RepoRoot $probeRoot
+# An explicit -Root is honoured verbatim: the caller decides the scope. Only when
+# it is omitted do we fall back to the repository that contains this script.
+# Deriving the root unconditionally would silently rewrite an explicit scope and
+# make the gate scan a different file set depending on where it was invoked from
+# (`git ls-files` is cwd-relative, so a subdirectory probe yields only that
+# subtree) - a scope that varies with the call site is a gate that can be
+# bypassed by choosing a different working directory.
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Resolve-RepoRoot $PSScriptRoot
+} else {
+    $Root = (Resolve-Path -LiteralPath $Root).Path
+}
 $selfPath = $MyInvocation.MyCommand.Path
 
 # ---- collect candidate files: tracked files first, filesystem walk as fallback ----
+# git writes paths as raw UTF-8 bytes. PowerShell decodes a native command's
+# output with [Console]::OutputEncoding, which on a Chinese Windows console is
+# the ANSI code page (GBK/936) unless the caller happened to run `chcp 65001`.
+# Under the wrong code page every non-ASCII path comes back mangled (U+FFFD),
+# Test-Path then fails, and the file is silently dropped from the scan - which
+# means a credential stored in a Chinese-named file would never be inspected.
+# Pin the encoding here so the gate does not depend on the caller's console.
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
 $tracked = $null
 try {
     $lsOut = & git -C $Root ls-files -z 2>$null
@@ -67,9 +82,23 @@ try {
 
 if ($null -ne $tracked) {
     $candidates = @()
+    $unresolved = 0
     foreach ($rel in $tracked) {
         $full = Join-Path $Root ($rel -replace '/', '\')
-        if (Test-Path -LiteralPath $full -PathType Leaf) { $candidates += $full }
+        if (Test-Path -LiteralPath $full -PathType Leaf) {
+            $candidates += $full
+        } elseif ($rel -match '[^\x00-\x7F]') {
+            # A non-ASCII path that cannot be resolved is almost always an
+            # encoding problem, not a missing file. Counting it keeps the gate
+            # honest: a silently dropped Chinese-named file is an unscanned file.
+            $unresolved++
+        }
+    }
+    if ($unresolved -gt 0) {
+        [Console]::Error.WriteLine(
+            ('WARNING: ' + $unresolved + ' non-ASCII path(s) from git could not be resolved and were NOT scanned. ' +
+             'The console encoding is likely not UTF-8 - run "chcp 65001" before this script, ' +
+             'or a credential in a non-ASCII-named file would go unnoticed.'))
     }
 } else {
     $candidates = @(Get-ChildItem -LiteralPath $Root -Recurse -File | ForEach-Object { $_.FullName })
