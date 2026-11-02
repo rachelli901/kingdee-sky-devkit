@@ -134,7 +134,7 @@ run-demo.bat
 ## 作者与署名
 
 - **作者**：rachelli901（<https://github.com/rachelli901>）
-- **邮箱**：rachelli901@users.noreply.github.com
+- **邮箱**：lir30481@gmail.com
 - **仓库**：<https://github.com/rachelli901/kingdee-sky-devkit>
 
 本仓库中的示例代码、测试、脚本、文档与 HTML 成品均由作者编写；第三方依赖与金蝶厂商资料的权属见上方「合规声明」。

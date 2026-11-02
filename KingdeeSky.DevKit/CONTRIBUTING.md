@@ -87,7 +87,7 @@
 ## 7 作者与署名
 
 - **作者**：rachelli901（<https://github.com/rachelli901>）
-- **邮箱**：rachelli901@users.noreply.github.com
+- **邮箱**：lir30481@gmail.com
 - **仓库**：<https://github.com/rachelli901/kingdee-sky-devkit>
 
 提交者请保持署名与实际贡献者一致，勿删除本文件与各源文件中的作者声明。

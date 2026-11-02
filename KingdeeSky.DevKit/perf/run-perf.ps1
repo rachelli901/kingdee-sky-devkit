@@ -1,4 +1,4 @@
-# Author: rachelli901 <rachelli901@users.noreply.github.com>
+# Author: rachelli901 <lir30481@gmail.com>
 # Repository: https://github.com/rachelli901/kingdee-sky-devkit
 
 # run-perf.ps1 - client-side performance smoke: start stub -> compile PerfProbe -> run -> save baseline.

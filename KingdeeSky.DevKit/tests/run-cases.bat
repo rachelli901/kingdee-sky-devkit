@@ -1,5 +1,5 @@
 @echo off
-rem Author: rachelli901 <rachelli901@users.noreply.github.com>
+rem Author: rachelli901 <lir30481@gmail.com>
 rem Repository: https://github.com/rachelli901/kingdee-sky-devkit
 
 chcp 65001 >nul
