@@ -111,6 +111,10 @@ $srcFiles = @(Get-ChildItem $srcProj -Recurse -Filter *.cs |
 if ($srcFiles.Count -eq 0) { throw 'No C# source files found under ' + $srcProj }
 
 Write-Output '==> [1/4] Compiling WebApiClient (csc, .NET Framework 4.8)'
+# Remove stale symbols before compiling. The csc invocation below uses /debug-,
+# so it produces no .pdb at all; anything left in bin\ came from an earlier
+# Visual Studio build and would not match the exe shipped next to it.
+Get-ChildItem $outDir -Filter '*.pdb' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 $cscArgs = @('/nologo','/target:exe','/optimize+','/debug-',('/out:' + $exePath),
     '/r:System.dll','/r:System.Core.dll','/r:System.Configuration.dll',
     '/r:System.Security.dll','/r:System.Web.Extensions.dll','/r:System.Xml.dll') + $srcFiles
@@ -152,6 +156,9 @@ if (-not $SkipPlugins) {
         $msbuild = Resolve-Msbuild
         if ($msbuild) {
             $pluginOut = Join-Path $root 'src\KingdeeSky.Plugins\bin\Release'
+            # Drop stale symbols so the package never ships a .pdb that does not
+            # match the plugin dll next to it.
+            Get-ChildItem $pluginOut -Filter '*.pdb' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
             Write-Output '==> [3/4] Building Plugins (Kingdee.BOS DLLs present)'
             & $msbuild $pluginProj /t:Build /p:Configuration=Release "/p:KingdeeBinsDir=$libDir" /v:m /nologo
             if ($LASTEXITCODE -ne 0) { throw 'Plugins build failed exit=' + $LASTEXITCODE }
@@ -178,15 +185,20 @@ Copy-Item $exePath (Join-Path $stageClient 'KingdeeSky.WebApiClient.exe') -Force
 Copy-Item (Join-Path $srcProj 'App.config') (Join-Path $stageClient 'KingdeeSky.WebApiClient.exe.config') -Force
 Copy-Item (Join-Path $srcProj 'App.config.example') $stageClient -Force
 Copy-Item (Join-Path $srcProj 'secrets.env.example') $stageClient -Force
-if (Test-Path (Join-Path $outDir 'KingdeeSky.WebApiClient.pdb')) {
-    Copy-Item (Join-Path $outDir 'KingdeeSky.WebApiClient.pdb') $stageClient -Force
+# Symbols are shipped only when this build produced them. Stale ones were
+# removed right before compiling, so anything here belongs to this build.
+$exePdb = Join-Path $outDir 'KingdeeSky.WebApiClient.pdb'
+if (Test-Path $exePdb) {
+    Copy-Item $exePdb $stageClient -Force
 }
 
 if ($pluginBuilt) {
     New-Item -ItemType Directory -Path $stagePlugins -Force | Out-Null
-    Copy-Item (Join-Path $root 'src\KingdeeSky.Plugins\bin\Release\KingdeeSky.Plugins.dll') $stagePlugins -Force
-    if (Test-Path (Join-Path $root 'src\KingdeeSky.Plugins\bin\Release\KingdeeSky.Plugins.pdb')) {
-        Copy-Item (Join-Path $root 'src\KingdeeSky.Plugins\bin\Release\KingdeeSky.Plugins.pdb') $stagePlugins -Force
+    $pluginDllPath = Join-Path $root 'src\KingdeeSky.Plugins\bin\Release\KingdeeSky.Plugins.dll'
+    Copy-Item $pluginDllPath (Join-Path $stagePlugins 'KingdeeSky.Plugins.dll') -Force
+    $pluginPdb = $pluginDllPath + '.pdb'
+    if (Test-Path $pluginPdb) {
+        Copy-Item $pluginPdb $stagePlugins -Force
     }
 }
 

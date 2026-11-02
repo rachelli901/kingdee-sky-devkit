@@ -70,6 +70,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+  <!--
+    前置检查：金蝶 BOS 程序集是商业软件的一部分，不随本仓库分发。
+    缺少这些程序集时，下面每一条 using 都会产生 CS0246（可达 100+ 条），
+    错误信息淹没真正的处理动作。这里在编译之前先判定一次：
+      · 全部就位 → 正常编译；
+      · 缺失     → 输出一条可执行指引并终止本次构建，避免刷屏式噪音。
+    判定只看文件是否存在，不加载程序集，因此不需要授权环境也能给出正确结论。
+  -->
+  <Target Name="CheckKingdeeBinsPresent" BeforeTargets="ResolveAssemblyReferences" Condition="!Exists('$(KingdeeBinsDir)\Kingdee.BOS.Core.dll')">
+    <Error Code="KDSKY1001" Text="缺少金蝶 BOS 程序集，无法编译 KingdeeSky.Plugins（当前目录：$(KingdeeBinsDir)）。&#xD;&#xD;&#xD;处理方式（二选一）：&#xD;&#xD;&#xD;1) 若你拥有授权的星空应用服务器：运行 lib\copy-kingdee-dlls.bat，按提示粘贴站点 WebSite\bin 路径，自动复制 4 个 DLL 到 lib\；&#xD;&#xD;&#xD;2) 若 DLL 已在别处：直接用属性覆盖，无需改动工程文件，&#xD;&#xD;   msbuild KingdeeSky.Plugins.csproj /p:KingdeeBinsDir=&quot;D:\K3Cloud\WebSite\bin&quot;&#xD;&#xD;&#xD;说明：Kingdee.BOS.* 属金蝶商业软件，受许可协议保护，不能随本仓库分发。&#xD;&#xD;仅编译客户端不需要这一步：KingdeeSky.WebApiClient 与 KingdeeSky.WebApiClient.Tests 均可零金蝶依赖编译。" />
+  </Target>
   <ItemGroup>
     <Compile Include="Common\FieldHelper.cs" />
     <Compile Include="Common\AuditLogHelper.cs" />
