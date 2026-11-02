@@ -126,6 +126,22 @@ namespace KingdeeSky.WebApiClient.Tests
         }
 
         [Test]
+        public static void Kms_RejectsPlainHttp()
+        {
+            Assert.Throws<InvalidOperationException>(
+                () => new Security.KmsSecretProvider("http://kms.example/", "token"));
+        }
+
+        [Test]
+        public static void Kms_AcceptsHttps()
+        {
+            var p = new Security.KmsSecretProvider("https://kms.example/", "token");
+            Assert.Contains(p.Name, "https://kms.example");
+            string value;
+            Assert.IsFalse(p.TryGet("", out value));
+        }
+
+        [Test]
         public static void Factory_Unknown_Throws()
         {
             Assert.Throws<ArgumentException>(
@@ -163,6 +179,16 @@ namespace KingdeeSky.WebApiClient.Tests
             Assert.AreEqual("****", Security.SecretRedactor.MaskShort("abcd"));
             Assert.AreEqual("12****yz", Security.SecretRedactor.MaskShort("123456yz"));
             Assert.AreEqual(null, Security.SecretRedactor.MaskShort(null));
+        }
+
+        [Test]
+        public static void Redactor_MasksShortValueAsWholeWordOnly()
+        {
+            // 短密钥（< MinSubstringLength）只在作为独立词出现时被掩码：既不放过极弱口令，也不误伤嵌在普通单词里的短串
+            Assert.IsTrue(Security.SecretRedactor.MinSubstringLength >= 4);
+            Assert.AreEqual("pw=" + Security.SecretRedactor.Mask,
+                Security.SecretRedactor.Redact("pw=ab", "ab"));
+            Assert.AreEqual("abc", Security.SecretRedactor.Redact("abc", "ab")); // 嵌在单词内 → 不动
         }
 
         [Test]

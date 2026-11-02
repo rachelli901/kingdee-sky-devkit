@@ -38,7 +38,7 @@ KingdeeSky.DevKit/
 ├─ scan-secrets.bat                   明文密钥/敏感信息静态扫描入口（委托 eng/scan-secrets.ps1）
 ├─ .gitignore                         忽略规则（密钥 / 构建产物 / 日志 / 真实 env 文件）
 ├─ .gitattributes                     行尾与二进制文件约定（文本统一 LF，Windows 脚本 CRLF）
-├─ .github/workflows/ci.yml           CI 流水线（密钥扫描→构建→测试→打包，GitHub Actions）
+├─ (CI 流水线位于仓库根 .github/workflows/ci.yml；GitHub Actions 只读取仓库根下的 .github/workflows/)
 ├─ .vscode/                           共享的 VS Code 调试/任务配置（launch.json、tasks.json；个人偏好 settings.json 不入库）
 ├─ eng/
 │  ├─ build.ps1                       生产构建脚本（密钥扫描 → 编译 WebApiClient → 测试门禁 → 可选 Plugins → 版本化打包）
@@ -80,9 +80,9 @@ KingdeeSky.DevKit/
 │     └─ Logging/                     结构化脱敏日志（SafeLogger）
 ├─ tests/
 │  ├─ README.md                       用例执行脚本说明（run-tests / run-cases 用法、退出码与分组）
-│  ├─ run-tests.bat / run-tests.ps1   测试门禁入口：全量 62 条（失败返回非 0）
+│  ├─ run-tests.bat / run-tests.ps1   测试门禁入口：全量 81 条（失败返回非 0）
 │  ├─ run-cases.bat / run-cases.ps1   L1 用例逐条/按分组执行（-Case / -Group / -List）
-│  └─ KingdeeSky.WebApiClient.Tests/  62 个零依赖用例（鉴权/密钥/配置/客户端链/传输安全/AppSec 签名/多环境覆盖）
+│  └─ KingdeeSky.WebApiClient.Tests/  81 个零依赖测试（鉴权/密钥/配置/客户端链/传输安全/AppSec 签名/多环境覆盖）
 ├─ perf/                              客户端侧性能冒烟（零金蝶 DLL 依赖）
 │  ├─ stub_server.py                  极简星空 WebAPI stub（仅 Python 标准库，固定响应）
 │  ├─ PerfProbe.cs                    性能探针：登录 1 次 + ExecuteBillQuery 循环，统计 min/avg/p95/max
@@ -97,7 +97,7 @@ KingdeeSky.DevKit/
    ├─ SLA与备份恢复预案.md             SLA 指标与 RTO/RPO、备份对象与策略、备份验证与恢复演练、监控告警、事故分级响应
    ├─ 多环境发布与变更管理.md         dev/test/prod 分层模型、KDSKY_* 覆盖、发布审批、灰度/金丝雀、回滚流程、变更记录模板
    ├─ 回归测试方案.md                  回归分层（L1 代码级 / L2 协议级 / L3 业务级）、用例分组与执行流程、进入与退出准则、缺陷分级与回归触发
-   ├─ 回归测试用例执行记录模板.md      单次回归执行的留档模板（62 条逐条清单 + 执行记录栏）
+   ├─ 回归测试用例执行记录模板.md      单次回归执行的留档模板
    ├─ 回滚预案.md                      版本化产物保留、发布前检查清单、WebApiClient / 插件 / SQL 回滚步骤、事故复盘清单
    └─ Scripts/
       └─ T_SKY_AUDITLOG.sql           审计表建表脚本（在账套库执行，各审核插件共用）
@@ -159,7 +159,7 @@ KingdeeSky.DevKit/
 
 1. 用 Visual Studio 2019/2022 打开 `KingdeeSky.DevKit.sln`（需 .NET Framework 4.8 开发工具包）；
 2. 修改 `src/KingdeeSky.WebApiClient/App.config` 的**非敏感项**：`ServerUrl`（星空地址）、`AcctId`（账套 ID）、`UserName`（登录账号）、`AuthMode`（password / oauth2 / appsec）；
-   **密码等密钥不写入配置文件**，用环境变量注入，例如 `set KINGDEE_PASSWORD=你的密码`；
+   **密码等密钥不写入配置文件**，用环境变量注入，例如 `set KINGDEE_PASSWORD=<你的密码>`；
    也可按 `secrets.env.example` 使用本地密钥文件（`SecretStore=file`），或切换 `dpapi` / `kms`；
 3. F5 运行 `KingdeeSky.WebApiClient`，启动时会自动登录并打印结果（页头显示鉴权方式与密钥来源），按菜单操作。
 4. 菜单 4（一键全流程：查询 → 建单 → 提交 → 审核 → 查看）还需在 App.config 填入账套内真实的组织/供应商/物料/单据类型**编号**；
@@ -196,18 +196,20 @@ KingdeeSky.DevKit/
 ## 构建 / 测试 / 打包（生产化）
 
 - **一键构建**：根目录 `build.bat [版本号]`（等价于 `powershell -NoProfile -ExecutionPolicy Bypass -File eng\build.ps1`）：
-  0. 先跑**明文密钥/敏感信息静态扫描**（`eng\scan-secrets.ps1`，可单独运行 `scan-secrets.bat`；也可 `-SkipSecretScan` 跳过），有命中立即中断（返回非 0）；
+  0. 先跑**明文密钥/敏感信息静态扫描**（`eng\scan-secrets.ps1`，可单独运行 `scan-secrets.bat`；也可 `-SkipSecretScan` 跳过），
+     扫描范围是**仓库根下全部受版本控制的文件**（`git ls-files`，含同级演示工程/操作台/交付件），有命中立即中断（返回非 0）；
   1. 编译 WebApiClient（Release，零金蝶 DLL 依赖）；
-  2. 跑**测试门禁**（62 个用例：鉴权/密钥来源/配置分层/客户端调用链/传输安全/AppSec 签名/多环境覆盖），任一失败立即中断（返回非 0）；
+  2. 跑**测试门禁**（81 个测试：鉴权/密钥来源/配置分层/客户端调用链/传输安全/AppSec 签名/多环境覆盖），任一失败立即中断（返回非 0）；
   3. 若 `lib\` 下已有从授权环境拷贝的 `Kingdee.BOS.Core.dll`，自动追加编译 Plugins（用 MSBuild，`KingdeeBinsDir` 指向 lib）；
   4. 产出版本化 ZIP 到 `artifacts\`（含 WebApiClient 可执行体、exe.config、模板、部署指南、SQL、README、VERSION）。
 - **单独跑测试**：`tests\run-tests.bat`（或 `tests\run-tests.ps1`）。
-- **单独扫密钥**：`scan-secrets.bat`（或 `eng\scan-secrets.ps1`；`-IncludeTests` 连测试夹具一起扫）。
-- **CI**：`.github\workflows\ci.yml` 在 push / PR 时自动执行「密钥扫描 → 构建 → 测试 → 打包」并把 ZIP 上传为 Artifact；
+- **单独扫密钥**：`scan-secrets.bat`（或 `eng\scan-secrets.ps1`；默认扫仓库根下全部受控文件，`-IncludeTests` 连测试夹具一起扫，
+  规则与白名单详见 `deploy\安全审计与漏洞扫描清单.md` §1.1）。
+- **CI**：仓库根 `.github\workflows\ci.yml`（GitHub Actions 只读取仓库根下的 `.github/workflows/`，故该文件位于仓库根而非本目录；脚本引用均带 `KingdeeSky.DevKit/` 前缀）在 push / PR 时自动执行「密钥扫描 → 构建 → 测试 → 打包」并把 ZIP 上传为 Artifact；
   Plugins 因金蝶 DLL 不可分发，CI 检出后 `lib\` 下没有 `Kingdee.BOS.Core.dll`，`build.ps1` 探测不到即自动跳过其编译；如需在流水线中构建 Plugins，须在受控 / 自托管 runner 上预先放置授权 DLL。
 - **版本锁定**：`eng/version.txt` 记录基线版本，`build.bat 1.1.0` 可临时覆盖；各工程注释与 `lib/README.md` 明确锁定**星空 V9.1 / .NET Framework 4.8**。
 - **密钥与配置分层**：`App.config` 只放非敏感项与密钥键名；密钥值经 `ISecretProvider`（环境变量 / 本地文件 / Windows DPAPI / KMS）注入，配置以 `AuthMode` / `SecretStore` 切换，日志经 `SafeLogger` 自动脱敏。
-- **传输与鉴权安全**：客户端默认强制 HTTPS（`AllowInsecureHttp` 显式设为 `true` 才放行明文 HTTP，并在日志/自检中告警；生产必须保持 `false`）；注意仓库自带的 `App.config` / `App.config.example` 为便于本地 mock 联调仍写 `true`，投产前必须改回 `false`；`AllowInvalidCertificate` 默认 `false`；AppSec 签名走 `IAppSecSigner` 骨架，配置 `AppSecSigningTemplate` 即启用 HMAC-SHA256 签名注入（详见 `deploy\鉴权降级与传输安全说明.md`）。
+- **传输与鉴权安全**：客户端默认强制 HTTPS（`AllowInsecureHttp` 显式设为 `true` 才放行明文 HTTP，并在日志/自检中告警；生产必须保持 `false`）；仓库内 `App.config` 与示例配置均保持 `false`，本地 mock 联调需由演示脚本显式生成/覆盖开发配置；`AllowInvalidCertificate` 默认 `false`；KMS 地址始终强制 HTTPS；AppSec 签名走 `IAppSecSigner` 骨架，配置 `AppSecSigningTemplate` 即启用 HMAC-SHA256 签名注入（详见 `deploy\鉴权降级与传输安全说明.md`）。
 - **运行前自检**：`KingdeeSky.WebApiClient.exe --selfcheck` 输出结构化健康检查（版本 / 配置 / 密钥源 / 鉴权组件 / 传输层 / 传输安全策略），不发起网络请求；返回 0 = 全部就绪，返回 1 = 存在未就绪项（用于 CI 或部署脚本的预检门禁）。加 `--json` 输出**单行机器可读 JSON**（含 `passed`/`failed`/`elapsedMs`/`checks`），可直接接入监控与告警。
 - **性能冒烟与基线**：`perf\run-perf.ps1` 启动本地 stub（`perf\stub_server.py`）→ 编译 `perf\PerfProbe.cs`（与客户端同源编译、零金蝶 DLL 依赖）→ 登录 1 次 + `ExecuteBillQuery` 循环 N 次 → 记录 min/avg/p95/max 延迟与失败数；基线写入 `perf\perf-baseline-<时间戳>.txt` 与 `perf\perf-baseline-latest.txt`，可纳入 CI 对比（与历史基线 P95 偏离 > 50% 需人工评估，> 100% 触发性能告警）。
 - **回滚预案**：见 `deploy\回滚预案.md`（版本化产物保留、发布前检查清单、WebApiClient 与插件及数据库脚本的回滚步骤、事故复盘清单）。

@@ -140,8 +140,22 @@ namespace KingdeeSky.WebApiClient.Diagnostics
             Section("鉴权组件检查");
             try
             {
-                IAuthProvider provider = AuthProviderFactory.Create(settings.AuthMode);
+                // 与 Program.Main 使用同一套工厂参数（含 AppSec 签名模板与时间戳格式），
+                // 否则 appsec 模式在这里会退化成占位实现，导致「模板配错也自检通过」的假通过。
+                IAuthProvider provider = AuthProviderFactory.Create(
+                    settings.AuthMode, settings.AppSecSigningTemplate, settings.AppSecTimestampFormat);
                 RecordCheck(logger, "鉴权组件可构造", true, provider.Name);
+
+                // appsec 模式下额外确认签名器是否真的生效（占位实现运行时会抛 NotSupportedException）
+                if (authMode == "appsec" || authMode == "appid_appsec")
+                {
+                    var appSecProvider = provider as AppIdAppSecAuthProvider;
+                    bool signerReady = appSecProvider != null && appSecProvider.HasSigner;
+                    RecordCheck(logger, "AppSec 签名器已生效", signerReady,
+                        signerReady
+                            ? "已按 AppSecSigningTemplate 构造真实签名器"
+                            : "AppSecSigningTemplate 为空，当前为占位实现，运行时将抛 NotSupportedException；请配置签名模板或改用 AuthMode=password / oauth2");
+                }
             }
             catch (Exception ex)
             {
@@ -205,6 +219,9 @@ namespace KingdeeSky.WebApiClient.Diagnostics
             RecordLine(logger, "AllowInsecureHttp", settings.AllowInsecureHttp ? "true" : "false");
             RecordLine(logger, "AllowInvalidCertificate", settings.AllowInvalidCertificate ? "true" : "false");
             RecordLine(logger, "AppSecSigningTemplate", settings.AppSecSigningTemplate ?? string.Empty);
+            RecordLine(logger, "AppSecTimestampFormat", string.IsNullOrWhiteSpace(settings.AppSecTimestampFormat)
+                ? HmacSha256AppSecSigner.DefaultTimestampFormat + "（默认）"
+                : settings.AppSecTimestampFormat);
 
             sw.Stop();
 

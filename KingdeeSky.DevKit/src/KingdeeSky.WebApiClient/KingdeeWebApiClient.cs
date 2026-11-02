@@ -69,8 +69,10 @@ namespace KingdeeSky.WebApiClient
         private readonly CookieContainer _cookies = new CookieContainer();
         private readonly JavaScriptSerializer _json = new JavaScriptSerializer { MaxJsonLength = 64 * 1024 * 1024 };
         private readonly bool _allowInsecureHttp;
-        private readonly Dictionary<string, string> _extraHeaders = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _extraHeaders =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private string _bearerToken;
+        private bool _disposed;
 
         /// <summary>当前已附加的自定义请求头（AppID/AppSec 签名等；测试可见）。</summary>
         internal Dictionary<string, string> ExtraHeaders { get { return _extraHeaders; } }
@@ -109,24 +111,28 @@ namespace KingdeeSky.WebApiClient
         /// <summary>提交单据。</summary>
         public string Submit(string formId, IList<long> ids)
         {
+            ValidateIds(ids);
             return FormAction(SvcSubmit, formId, BuildIdsPayload(ids));
         }
 
         /// <summary>审核单据。</summary>
         public string Audit(string formId, IList<long> ids)
         {
+            ValidateIds(ids);
             return FormAction(SvcAudit, formId, BuildIdsPayload(ids));
         }
 
         /// <summary>反审核单据。</summary>
         public string UnAudit(string formId, IList<long> ids)
         {
+            ValidateIds(ids);
             return FormAction(SvcUnAudit, formId, BuildIdsPayload(ids));
         }
 
         /// <summary>删除单据（仅草稿/已提交状态可删，已审核需先反审核）。</summary>
         public string Delete(string formId, IList<long> ids)
         {
+            ValidateIds(ids);
             return FormAction(SvcDelete, formId, BuildIdsPayload(ids));
         }
 
@@ -161,6 +167,14 @@ namespace KingdeeSky.WebApiClient
         public object[][] ExecuteBillQuery(string formId, string fieldKeys, string filterString,
             string orderString, int topRowCount = 0, int startRow = 0, int limit = 0)
         {
+            ValidateFormId(formId);
+            if (string.IsNullOrWhiteSpace(fieldKeys))
+            {
+                throw new ArgumentException("查询字段不能为空", "fieldKeys");
+            }
+            if (topRowCount < 0) { throw new ArgumentOutOfRangeException("topRowCount", "查询上限不能为负数"); }
+            if (startRow < 0) { throw new ArgumentOutOfRangeException("startRow", "起始行不能为负数"); }
+            if (limit < 0) { throw new ArgumentOutOfRangeException("limit", "查询分页大小不能为负数"); }
             var data = new Dictionary<string, object>
             {
                 { "FormId", formId },
@@ -196,12 +210,35 @@ namespace KingdeeSky.WebApiClient
 
         private string FormAction(string service, string formId, string dataJson)
         {
+            ValidateFormId(formId);
             var payload = new Dictionary<string, object>
             {
                 { "formid", formId },
                 { "data", dataJson }
             };
             return Post(service, payload);
+        }
+
+        private static void ValidateFormId(string formId)
+        {
+            if (string.IsNullOrWhiteSpace(formId))
+            {
+                throw new ArgumentException("单据 FormId 不能为空", "formId");
+            }
+        }
+
+        private static void ValidateIds(IList<long> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                throw new ArgumentException("单据内码集合不能为空", "ids");
+            }
+            var seen = new HashSet<long>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (ids[i] <= 0) { throw new ArgumentException("单据内码必须为正数", "ids"); }
+                if (!seen.Add(ids[i])) { throw new ArgumentException("单据内码集合不能包含重复值", "ids"); }
+            }
         }
 
         private string BuildIdsPayload(IList<long> ids)
@@ -225,6 +262,7 @@ namespace KingdeeSky.WebApiClient
         /// <summary>以 JSON 方式提交到相对 .kdsvc 路径或完整 URL，返回响应正文（IApiTransport 实现）。</summary>
         public string PostJson(string pathOrUrl, string jsonBody)
         {
+            ThrowIfDisposed();
             var request = CreateRequest(pathOrUrl, "application/json; charset=utf-8");
             byte[] body = Encoding.UTF8.GetBytes(jsonBody ?? string.Empty);
             request.ContentLength = body.Length;
@@ -238,6 +276,7 @@ namespace KingdeeSky.WebApiClient
         /// <summary>以表单方式提交（OAuth 令牌端点等），返回响应正文（IApiTransport 实现）。</summary>
         public string PostForm(string pathOrUrl, IDictionary<string, string> form)
         {
+            ThrowIfDisposed();
             var request = CreateRequest(pathOrUrl, "application/x-www-form-urlencoded; charset=utf-8");
             var sb = new StringBuilder();
             if (form != null)
@@ -264,18 +303,41 @@ namespace KingdeeSky.WebApiClient
         /// <summary>设置后续请求使用的 Bearer 令牌（OAuth 场景，IApiTransport 实现）。</summary>
         public void UseBearerToken(string token)
         {
+            ThrowIfDisposed();
             _bearerToken = token;
         }
 
         /// <summary>为后续请求附加自定义请求头（AppID/AppSec 签名、时间戳、Nonce 等；IApiTransport 实现）。</summary>
         public void SetRequestHeader(string name, string value)
         {
-            if (string.IsNullOrEmpty(name)) { throw new ArgumentException("请求头名称不能为空", "name"); }
-            _extraHeaders[name] = value ?? string.Empty;
+            ThrowIfDisposed();
+            if (string.IsNullOrWhiteSpace(name)) { throw new ArgumentException("请求头名称不能为空", "name"); }
+            // HttpWebRequest 对这些头有专用属性或禁止手工设置；提前拒绝可避免
+            // 请求发送阶段出现平台相关的 ProtocolViolationException。
+            string normalized = name.Trim();
+            if (normalized.Equals("Authorization", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("Content-Type", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("Content-Length", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("Host", StringComparison.OrdinalIgnoreCase)
+                || normalized.Equals("Connection", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("请求头由传输层管理，不能通过 SetRequestHeader 设置：" + name, "name");
+            }
+            _extraHeaders[normalized] = value ?? string.Empty;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed) { throw new ObjectDisposedException("KingdeeWebApiClient"); }
         }
 
         private HttpWebRequest CreateRequest(string pathOrUrl, string contentType)
         {
+            if (string.IsNullOrWhiteSpace(pathOrUrl))
+            {
+                throw new ArgumentException("服务端点不能为空", "pathOrUrl");
+            }
+            pathOrUrl = pathOrUrl.Trim();
             string url = pathOrUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                          pathOrUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
                 ? pathOrUrl
@@ -314,15 +376,21 @@ namespace KingdeeSky.WebApiClient
             {
                 // 星空业务错误/鉴权失败仍会返回带 JSON 的响应体，读出来一并抛出，便于定位
                 string responseText = string.Empty;
+                string status = "unknown";
                 if (ex.Response != null)
                 {
+                    var httpResponse = ex.Response as HttpWebResponse;
+                    if (httpResponse != null)
+                    {
+                        status = ((int)httpResponse.StatusCode) + " " + httpResponse.StatusDescription;
+                    }
                     using (var sr = new StreamReader(ex.Response.GetResponseStream(), Encoding.UTF8))
                     {
                         responseText = sr.ReadToEnd();
                     }
                 }
                 throw new InvalidOperationException(
-                    string.Format("调用 {0} 失败：{1}；响应内容：{2}", request.RequestUri, ex.Message, _logger.Scrub(responseText)), ex);
+                    string.Format("调用 {0} 失败（HTTP {1}）：{2}；响应内容：{3}", request.RequestUri, status, ex.Message, _logger.Scrub(responseText)), ex);
             }
         }
 
@@ -343,6 +411,12 @@ namespace KingdeeSky.WebApiClient
                 return result;
             }
 
+            if (root == null)
+            {
+                result.Message = "返回 JSON 根节点为空或不是对象";
+                return result;
+            }
+
             IDictionary<string, object> resultNode = AsDict(root.ContainsKey("Result") ? root["Result"] : null);
             if (resultNode == null)
             {
@@ -354,7 +428,7 @@ namespace KingdeeSky.WebApiClient
             if (status != null)
             {
                 object success;
-                result.IsSuccess = status.TryGetValue("IsSuccess", out success) && success is bool && (bool)success;
+                result.IsSuccess = status.TryGetValue("IsSuccess", out success) && ToBoolean(success);
 
                 var errors = status.ContainsKey("Errors") ? status["Errors"] as object[] : null;
                 if (errors != null)
@@ -401,6 +475,16 @@ namespace KingdeeSky.WebApiClient
             return s.Length <= max ? s : s.Substring(0, max) + "...";
         }
 
+        private static bool ToBoolean(object value)
+        {
+            if (value is bool) { return (bool)value; }
+            if (value == null) { return false; }
+            string text = Convert.ToString(value).Trim();
+            if (text == "1" || text.Equals("true", StringComparison.OrdinalIgnoreCase)
+                || text.Equals("yes", StringComparison.OrdinalIgnoreCase)) { return true; }
+            return false;
+        }
+
         private static IDictionary<string, object> AsDict(object o)
         {
             return o as IDictionary<string, object>;
@@ -422,9 +506,30 @@ namespace KingdeeSky.WebApiClient
             return null;
         }
 
+        /// <summary>是否已释放（释放后凭据类内存副本已被清理，不应再复用该实例发起请求）。</summary>
+        public bool IsDisposed { get { return _disposed; } }
+
+        /// <summary>
+        /// 释放客户端持有的敏感内存状态。本类型不持有非托管句柄、长连接或流：
+        /// 每个请求都是独立的 HttpWebRequest，随响应结束即释放；CookieContainer 亦随进程自行失效。
+        /// 因此 Dispose 的实际职责是清理凭据类内存副本 —— Bearer 令牌与自定义签名请求头（AppSec 签名/时间戳/Nonce），
+        /// 避免已交付/已弃用的实例继续持有可用于冒充的凭据材料。
+        /// </summary>
         public void Dispose()
         {
-            // 当前仅持有 CookieContainer/HttpWebRequest 短连接，无需要显式释放的资源；保留以支持 using 写法
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed) { return; }
+            if (disposing)
+            {
+                _bearerToken = null;
+                _extraHeaders.Clear();
+            }
+            _disposed = true;
         }
     }
 }

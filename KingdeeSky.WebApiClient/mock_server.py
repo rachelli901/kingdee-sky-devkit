@@ -15,6 +15,8 @@
 """
 
 import json
+import os
+import secrets
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -37,9 +39,39 @@ SVC_QUERY = (
 )
 SVC_PUSH = "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Push.common.kdsvc"
 
-# 模拟登录账号（App.config 中 UserName/Password 与此匹配即登录成功）
+# 模拟登录账号：客户端 App.config 的 UserName 与此一致即登录成功。
+# 口令不落源码，解析优先级：
+#   1) 环境变量 KINGDEE_MOCK_PASSWORD（run-perf / run-demo 脚本注入）
+#   2) 本机 .demo-credential（已加入 .gitignore，供多次运行复用）
+#   3) 现场随机生成并写入 .demo-credential
+# 解析结果只在启动日志中打印，绝不写进源码或受版本控制的文件。
 MOCK_USER = "Administrator"
-MOCK_PASSWORD = "demo123"
+CREDENTIAL_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), ".demo-credential"
+)
+
+
+def resolve_password():
+    env = os.environ.get("KINGDEE_MOCK_PASSWORD")
+    if env:
+        return env
+    try:
+        with open(CREDENTIAL_FILE, "r", encoding="utf-8") as fh:
+            saved = fh.read().strip()
+        if saved:
+            return saved
+    except OSError:
+        pass
+    generated = secrets.token_urlsafe(9)
+    try:
+        with open(CREDENTIAL_FILE, "w", encoding="utf-8") as fh:
+            fh.write(generated + "\n")
+    except OSError:
+        pass
+    return generated
+
+
+MOCK_PASSWORD = resolve_password()
 
 # 单据状态：A=暂存/草稿  B=已提交  C=已审核
 # 模拟库：formId -> { 内码: {model, status, number} }
@@ -194,7 +226,7 @@ def handle_save(body):
 
 
 def _resolve_ids(body):
-    """从 Submit/Audit/Delete 的 data 中取 Ids，找不到时回退到 Save 返回的单据。"""
+    """从 Submit/Audit/Delete 的 data 中取 Ids；取不到（缺失字段 / 空数组 / 非法值）返回空列表。"""
     data = parse_data_json(body)
     ids = data.get("Ids") or []
     if isinstance(ids, list):
@@ -237,6 +269,9 @@ def handle_unaudit(body):
 def handle_delete(body):
     form_id = body.get("formid", "")
     ids = _resolve_ids(body)
+    if not ids:
+        # 空内码（Ids 缺失 / 空数组）按参数错误返回，而不是「删除成功（0 条）」，避免掩盖调用方传参缺陷
+        return fail_result("删除失败：未指定有效内码（Ids 不能为空）")
     store = bills.get(form_id, {})
     for bid in ids:
         rec = store.get(bid)
@@ -323,6 +358,14 @@ def handle_push(body):
     return ok_result("下推成功", bid, number)
 
 
+def handle_reset(body):
+    """重置演示数据：清空内存库并重新预置 3 张采购订单（供浏览器操作台『重置』按钮）。"""
+    bills.clear()
+    seed_demo_bills()
+    print("[Reset] 演示数据已重置")
+    return {"Message": "演示数据已重置"}
+
+
 # ---------------------------------------------------------------- HTTP 服务
 ROUTE_MAP = {
     SVC_AUTH: handle_validate_user,
@@ -334,6 +377,7 @@ ROUTE_MAP = {
     SVC_VIEW: handle_view,
     SVC_QUERY: handle_query,
     SVC_PUSH: handle_push,
+    "__reset__": handle_reset,
 }
 
 
@@ -370,12 +414,25 @@ class MockHandler(BaseHTTPRequestHandler):
     def _send(self, code, obj, extra_headers=None):
         payload = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
+        # 允许浏览器跨域访问（演示用，生产应按源白名单收紧）
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         for name, value in extra_headers or []:
             self.send_header(name, value)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)
+
+    def do_OPTIONS(self):
+        # 浏览器对跨域 POST(Content-Type: application/json) 会先发预检
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "86400")
+        self.end_headers()
 
 
 def main():

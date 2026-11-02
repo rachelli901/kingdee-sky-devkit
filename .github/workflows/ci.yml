@@ -1,0 +1,92 @@
+name: ci
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+# This workflow lives at the repository root on purpose: GitHub Actions only reads
+# .github/workflows/ at the root of the repository, so a copy inside
+# KingdeeSky.DevKit/ would never be triggered. Every referenced script therefore
+# carries the KingdeeSky.DevKit/ prefix, while each script still resolves its own
+# paths from its location and works regardless of the working directory.
+jobs:
+  build-test-package:
+    name: Build + Test + Package
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Secret scan (no plaintext secrets gate, whole repo)
+        shell: powershell
+        run: ./KingdeeSky.DevKit/eng/scan-secrets.ps1
+
+      - name: Build, test and package (zero Kingdee deps)
+        shell: powershell
+        run: ./KingdeeSky.DevKit/eng/build.ps1 -SkipSecretScan
+
+      - name: Run numbered regression cases
+        shell: powershell
+        run: ./KingdeeSky.DevKit/tests/run-cases.ps1 -All
+
+      - name: Verify package carries the delivered HTML
+        shell: powershell
+        run: |
+          # The browser console and the V9.1 handbook are customer entry points
+          # named in README.md and the getting-started guide, so the package must
+          # carry them - and must carry the very same bytes as deploy\ holds.
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $package = Get-ChildItem ./KingdeeSky.DevKit/artifacts -Filter *.zip |
+            Sort-Object LastWriteTime | Select-Object -Last 1
+          if (-not $package) { throw 'No package ZIP found.' }
+          $expected = @('deploy/KingdeeSky.WebApiClient.html', 'deploy/KingdeeSky.DevKit-V9.1 deployment.html')
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+          try {
+            foreach ($name in $expected) {
+              # Compress-Archive stores entry names with Windows separators, so the
+              # raw name is 'deploy\file.html'. Normalise before comparing.
+              $leaf = Split-Path ($name -replace '/', '\') -Leaf
+              $entry = $zip.Entries | Where-Object {
+                ($_.FullName -replace '\\', '/') -eq $name
+              } | Select-Object -First 1
+              if (-not $entry) { throw "Package is missing deliverable: $name" }
+              $source = Join-Path './deploy' $leaf
+              if (-not (Test-Path $source)) { throw "Source deliverable missing: $source" }
+              $stream = $entry.Open()
+              try {
+                $sha = [System.Security.Cryptography.SHA256]::Create()
+                try {
+                  $entryHash = ([BitConverter]::ToString($sha.ComputeHash($stream))).Replace('-', '').ToLowerInvariant()
+                } finally { $sha.Dispose() }
+              } finally { $stream.Dispose() }
+              $fileHash = (Get-FileHash $source -Algorithm SHA256).Hash.ToLowerInvariant()
+              if ($entryHash -ne $fileHash) { throw "Deliverable drift: $name differs between package and deploy\" }
+              Write-Output "$name : packaged copy matches deploy\"
+            }
+          } finally { $zip.Dispose() }
+
+      - name: Verify package SHA-256 sidecars
+        shell: powershell
+        run: |
+          $packages = Get-ChildItem ./KingdeeSky.DevKit/artifacts -Filter *.zip | Where-Object {
+            Test-Path ($_.FullName + '.sha256')
+          }
+          if ($packages.Count -eq 0) { throw 'No package ZIP found for checksum verification.' }
+          foreach ($package in $packages) {
+            $sidecar = $package.FullName + '.sha256'
+            if (-not (Test-Path $sidecar)) { throw "Missing SHA-256 sidecar: $sidecar" }
+            $expected = ((Get-Content $sidecar -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+            $actual = (Get-FileHash $package.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($expected -ne $actual) { throw "Checksum mismatch: $package" }
+            Write-Output "$($package.Name): SHA-256 verified"
+          }
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: kingdeesky-devkit-build
+          path: |
+            KingdeeSky.DevKit/artifacts/*.zip
+            KingdeeSky.DevKit/artifacts/*.zip.sha256
+          if-no-files-found: error

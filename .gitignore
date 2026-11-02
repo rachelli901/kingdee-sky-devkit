@@ -28,6 +28,9 @@ bin/
 obj/
 artifacts/
 webapi-console/dist/
+# 演示客户端的构建输出目录：由 KingdeeSky.WebApiClient/build-demo.* 从
+# KingdeeSky.DevKit/src/KingdeeSky.WebApiClient 编译生成，不再手工维护副本
+KingdeeSky.WebApiClient/app/
 *.user
 *.suo
 *.userprefs
@@ -46,6 +49,10 @@ Thumbs.db
 secrets.env
 *.secrets.env
 App.config.local
+# 演示工程本机登录口令（由 mock_server.py 生成并本地保存，仅本机复用，严禁入库）
+.demo-credential
+# 运行期配置（由 App.config 复制而来，可能带上本机密钥，一律不入库）
+*.exe.config
 *.dpapi
 *.dpapi.json
 env/*.env

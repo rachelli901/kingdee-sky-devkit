@@ -25,6 +25,14 @@ const VENDOR = path.join(PROTOTYPE, 'vendor');
 const OUT_DIR = path.join(PROJ, 'dist');
 const OUT_FILE = path.join(OUT_DIR, 'index.html');
 
+// The single-file console is also a delivery artefact: it lives next to the
+// deployment manuals in the repository's deploy\ folder and is what the README
+// and the getting-started guide tell the customer to open. Syncing it here -
+// instead of leaving it to a manual copy - is what keeps the delivered file
+// from silently drifting away from the source it was built from.
+const REPO_ROOT = path.resolve(PROJ, '..');
+const DELIVERABLE = path.join(REPO_ROOT, 'deploy', 'KingdeeSky.WebApiClient.html');
+
 const BARES = {
   'react': 'esm.sh/react@18.3.1/__entry.js',
   'react/jsx-runtime': 'esm.sh/react@18.3.1/jsx-runtime/__entry.js',
@@ -434,6 +442,13 @@ window.__verify = async function () {
 
   const size = Buffer.byteLength(final, 'utf8');
   console.log(`wrote ${OUT_FILE} (${size} bytes, ${registry.size} modules)`);
+
+  // Sync the delivery copy. Same bytes, so the SHA-256 of the two files is
+  // identical and a drift check in CI can compare them directly.
+  await mkdir(path.dirname(DELIVERABLE), { recursive: true });
+  await writeFile(DELIVERABLE, final, 'utf8');
+  console.log(`synced ${DELIVERABLE} (${size} bytes)`);
+
   console.log('module ids:');
   for (const id of registry.keys()) console.log('  -', id);
 }

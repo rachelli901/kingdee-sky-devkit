@@ -54,10 +54,15 @@ namespace KingdeeSky.Plugins.PurchaseOrder
         {
             base.DataChanged(e);
 
-            // 表头字段 e.Row 为 0/-1；分录字段 e.Row 为分录行号（从 0 开始）
+            // 先按字段标识判定是否为目标分录字段，不再用「行号 < 0」做前置拦截：
+            // 表头字段的 e.Row 在不同补丁版本下可能为 0 也可能为 -1，用行号判定既会漏掉
+            // 分录事件、也拦不住表头事件；字段标识才是稳定的判定依据。
+            if (!IsChangedField(e, FQty) && !IsChangedField(e, FTaxPrice)) { return; }
+
+            // 目标字段都是分录字段，正常行号为 0 起的分录行号；行号异常（没有对应分录行）时
+            // 不做处理，避免把值写到表头行或越界行。
             if (e.Row < 0) { return; }
 
-            if (e.Field.Key == FQty || e.Field.Key == FTaxPrice)
             {
                 decimal qty = ToDecimal(this.View.Model.GetValue(FQty, e.Row));
                 decimal taxPrice = ToDecimal(this.View.Model.GetValue(FTaxPrice, e.Row));
@@ -93,6 +98,26 @@ namespace KingdeeSky.Plugins.PurchaseOrder
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// 判断数据变化事件是否来自指定字段。
+        /// 星空不同补丁版本下，e.Field.Key 对分录字段可能返回短键（如 FQty），
+        /// 也可能返回带实体限定的内部标识（如 FEntity_FQty / FEntity.FQty），
+        /// 因此这里对「短键」与「带实体前缀」两种形态一并比较（带前缀时按末段比对），
+        /// 避免联动分支在部分版本上永不命中。
+        /// 注：本判定依赖 e.Field.Key 的实际取值形态，需在真实星空环境用一次界面操作回归确认。
+        /// </summary>
+        private static bool IsChangedField(DataChangedEventArgs e, string fieldKey)
+        {
+            if (e == null || e.Field == null || string.IsNullOrEmpty(fieldKey)) { return false; }
+
+            string key = e.Field.Key;
+            if (string.IsNullOrEmpty(key)) { return false; }
+            if (string.Equals(key, fieldKey, StringComparison.OrdinalIgnoreCase)) { return true; }
+
+            return key.EndsWith("_" + fieldKey, StringComparison.OrdinalIgnoreCase)
+                || key.EndsWith("." + fieldKey, StringComparison.OrdinalIgnoreCase);
         }
 
         private static decimal ToDecimal(object value)

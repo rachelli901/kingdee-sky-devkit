@@ -9,19 +9,25 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 # =============================================================================
-# KingdeeSky.DevKit - L1 code-level case runner (62 cases, TC-L1-001..062)
+# KingdeeSky.DevKit - L1 code-level case runner (79 cases, TC-L1-001..079)
 # =============================================================================
 # Built-in mapping: TC-L1 id -> group (A..E) -> test method (Type.Method).
-# Groups: A=AuthProviderTests(001-016) B=SecretProviderTests(017-031)
-#         C=ConfigTests(032-040) D=ClientTests(041-046) E=TransportSecurityTests(047-062)
+# Groups: A=AuthProviderTests(001-016)                     -> 16
+#         B=SecretProviderTests(017-031, 063, 068-069)       -> 18
+#         C=ConfigTests(032-040, 070-072)                   -> 12
+#         D=ClientTests(041-046, 064, 073-076, 078)         -> 12
+#         E=TransportSecurityTests(047-062, 065-067, 077)   -> 20
+# Note: existing ids keep their original numbers (they are cross-referenced by
+#       tests/README.md and the deploy docs); the 5 cases added in the 2026-10-29
+#       hardening round were appended as TC-L1-063..067 instead of interleaved.
 #
 # Usage (PowerShell 5.1):
-#   .\run-cases.ps1                     run all 62 cases (same as -All)
-#   .\run-cases.ps1 -All                run all 62 cases
+#   .\run-cases.ps1                     run all 79 cases (same as -All)
+#   .\run-cases.ps1 -All                run all 79 cases
 #   .\run-cases.ps1 -Case TC-L1-001     run a single case by id
 #   .\run-cases.ps1 -Case Password_Name run a single case by short/long method name
 #   .\run-cases.ps1 -Group A            run one group (A, B, C, D or E)
-#   .\run-cases.ps1 -List               print id/group/method mapping (62 rows), no test run
+#   .\run-cases.ps1 -List               print id/group/method mapping (79 rows), no test run
 #   .\run-cases.bat -Case TC-L1-001     same via batch entry
 #
 # Exit codes: 0 = all selected cases passed, 1 = at least one failed,
@@ -90,7 +96,24 @@ $CaseMap = @(
   @{ Id = 'TC-L1-059'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_Deterministic_EmptyBody' },
   @{ Id = 'TC-L1-060'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_Deterministic_HelloBody' },
   @{ Id = 'TC-L1-061'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_EmptyTemplate_Throws' },
-  @{ Id = 'TC-L1-062'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_NullContext_Throws' }
+  @{ Id = 'TC-L1-062'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_NullContext_Throws' },
+  @{ Id = 'TC-L1-063'; Group = 'B'; Method = 'SecretProviderTests.Redactor_MasksShortValueAsWholeWordOnly' },
+  @{ Id = 'TC-L1-064'; Group = 'D'; Method = 'ClientTests.Dispose_ClearsCredentialState_AndIsIdempotent' },
+  @{ Id = 'TC-L1-065'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_TimestampFormat_DefaultsToDatePattern' },
+  @{ Id = 'TC-L1-066'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_TimestampFormat_UnixSecondsAndMilliseconds' },
+  @{ Id = 'TC-L1-067'; Group = 'E'; Method = 'TransportSecurityTests.HmacSha256AppSecSigner_TimestampFormat_CustomDotNetPattern' }
+  ,@{ Id = 'TC-L1-068'; Group = 'B'; Method = 'SecretProviderTests.Kms_RejectsPlainHttp' }
+  ,@{ Id = 'TC-L1-069'; Group = 'B'; Method = 'SecretProviderTests.Kms_AcceptsHttps' }
+  ,@{ Id = 'TC-L1-070'; Group = 'C'; Method = 'ConfigTests.Validate_ProductionRejectsInsecureHttp' }
+  ,@{ Id = 'TC-L1-071'; Group = 'C'; Method = 'ConfigTests.Validate_OAuth2RequiresHttpsTokenEndpoint' }
+  ,@{ Id = 'TC-L1-072'; Group = 'C'; Method = 'ConfigTests.Validate_AppSecRequiresSigningTemplate' }
+  ,@{ Id = 'TC-L1-073'; Group = 'D'; Method = 'ClientTests.DisposedClient_RejectsFurtherTransportUse' }
+  ,@{ Id = 'TC-L1-074'; Group = 'D'; Method = 'ClientTests.EmptyEndpoint_IsRejectedClearly' }
+  ,@{ Id = 'TC-L1-075'; Group = 'D'; Method = 'ClientTests.InspectResult_AcceptsStringSuccessFlag' }
+  ,@{ Id = 'TC-L1-076'; Group = 'D'; Method = 'ClientTests.InspectResult_HandlesNullRoot' }
+  ,@{ Id = 'TC-L1-077'; Group = 'E'; Method = 'TransportSecurityTests.SetRequestHeader_ReservedName_Throws' }
+  ,@{ Id = 'TC-L1-078'; Group = 'D'; Method = 'ClientTests.BillOperations_RejectDuplicateIds' }
+  ,@{ Id = 'TC-L1-079'; Group = 'D'; Method = 'ClientTests.BillQuery_RejectsNegativePaging' }
 )
 
 # -- list mode: just print the mapping -------------------------------------------------
@@ -132,7 +155,7 @@ if ($All) {
     if ($dot -gt 0 -and $c.Method.Substring($dot + 1) -eq $key) { $hit = $c; break }
   }
   if ($null -eq $hit) {
-    [Console]::Error.WriteLine('Unknown case: ' + $key + ' (expected TC-L1-001..TC-L1-062 or a method name; use -List to see all)')
+    [Console]::Error.WriteLine('Unknown case: ' + $key + ' (expected TC-L1-001..TC-L1-079 or a method name; use -List to see all)')
     exit 2
   }
   $selected = @($hit)

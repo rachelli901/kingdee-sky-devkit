@@ -37,8 +37,10 @@ namespace KingdeeSky.Plugins.CustomBill
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
-            if (e.Row < 0) { return; }
-            if (e.Field.Key == FAmount || e.Field.Key == FExpType)
+
+            // 只按字段标识判定是否为目标分录字段，不再用「行号 < 0」做前置拦截：
+            // 表头字段的 e.Row 在不同补丁版本下可能为 0 也可能为 -1，行号不是可靠的判据。
+            if (IsChangedField(e, FAmount) || IsChangedField(e, FExpType))
             {
                 RecalcTotal();
             }
@@ -104,6 +106,25 @@ namespace KingdeeSky.Plugins.CustomBill
                 total += ToDecimal(this.View.Model.GetValue(FAmount, i));
             }
             this.View.Model.SetValue(FTotalAmount, Math.Round(total, 2));
+        }
+
+        /// <summary>
+        /// 判断数据变化事件是否来自指定字段。
+        /// 星空不同补丁版本下，e.Field.Key 对分录字段可能返回短键（如 FAmount），
+        /// 也可能返回带实体限定的内部标识（如 FEntity_FAmount / FEntity.FAmount），
+        /// 因此这里对「短键」与「带实体前缀」两种形态一并比较（带前缀时按末段比对）。
+        /// 注：本判定依赖 e.Field.Key 的实际取值形态，需在真实星空环境用一次界面操作回归确认。
+        /// </summary>
+        private static bool IsChangedField(DataChangedEventArgs e, string fieldKey)
+        {
+            if (e == null || e.Field == null || string.IsNullOrEmpty(fieldKey)) { return false; }
+
+            string key = e.Field.Key;
+            if (string.IsNullOrEmpty(key)) { return false; }
+            if (string.Equals(key, fieldKey, StringComparison.OrdinalIgnoreCase)) { return true; }
+
+            return key.EndsWith("_" + fieldKey, StringComparison.OrdinalIgnoreCase)
+                || key.EndsWith("." + fieldKey, StringComparison.OrdinalIgnoreCase);
         }
 
         private static decimal ToDecimal(object value)

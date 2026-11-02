@@ -53,6 +53,56 @@ namespace KingdeeSky.WebApiClient.Tests
         }
 
         [Test]
+        public static void Validate_ProductionRejectsInsecureHttp()
+        {
+            Settings s = new Settings
+            {
+                ServerUrl = "http://127.0.0.1/K3Cloud/",
+                AcctId = "ABCDEFG",
+                UserName = "Administrator",
+                DeployEnv = "prod",
+                AllowInsecureHttp = true
+            };
+            Assert.Throws<InvalidOperationException>(() => s.ValidateOrThrow());
+        }
+
+        [Test]
+        public static void Validate_OAuth2RequiresHttpsTokenEndpoint()
+        {
+            Settings missing = new Settings
+            {
+                ServerUrl = "https://api.example/K3Cloud/",
+                AcctId = "ABCDEFG",
+                UserName = "svc",
+                AuthMode = "oauth2"
+            };
+            Assert.Throws<InvalidOperationException>(() => missing.ValidateOrThrow());
+
+            Settings insecure = new Settings
+            {
+                ServerUrl = "https://api.example/K3Cloud/",
+                AcctId = "ABCDEFG",
+                UserName = "svc",
+                AuthMode = "oauth2",
+                TokenEndpoint = "http://auth.example/token"
+            };
+            Assert.Throws<InvalidOperationException>(() => insecure.ValidateOrThrow());
+        }
+
+        [Test]
+        public static void Validate_AppSecRequiresSigningTemplate()
+        {
+            Settings s = new Settings
+            {
+                ServerUrl = "https://api.example/K3Cloud/",
+                AcctId = "ABCDEFG",
+                UserName = "svc",
+                AuthMode = "appsec"
+            };
+            Assert.Throws<InvalidOperationException>(() => s.ValidateOrThrow());
+        }
+
+        [Test]
         public static void CreateSecretProvider_Env()
         {
             Settings s = Settings.Load();

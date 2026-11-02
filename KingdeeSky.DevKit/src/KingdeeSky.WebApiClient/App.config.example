@@ -47,12 +47,15 @@
     <add key="Scope" value="" />
     <!-- AuthMode=appsec 时的签名模板（按星空版本规范填写；留空则启用 appsec 会提示降级，可改用 password / oauth2） -->
     <add key="AppSecSigningTemplate" value="" />
+    <!-- AuthMode=appsec 时的时间戳格式（抽为可配置项，需与星空【第三方系统登录授权】在线测试样本对齐）：
+         留空 = 默认 yyyy-MM-dd HH:mm:ss；填 unix / unix-ms 输出秒/毫秒整数戳；也可填自定义 .NET 格式串 -->
+    <add key="AppSecTimestampFormat" value="" />
 
     <!-- ================= 传输安全（本机可落地） ================= -->
     <!-- AllowInsecureHttp：false（默认语义，代码默认值）= 强制 HTTPS；true = 显式放行明文 HTTP 并告警。
          本模板默认 true 仅为方便本地对 mock/演示站点的联调；生产环境必须改为 false 并使用 HTTPS -->
-    <add key="AllowInsecureHttp" value="true" />
-    <!-- AllowInvalidCertificate：false（默认）= 完整校验服务器证书；true = 放行任意证书（仅本地调试，生产必须 false） -->
+    <add key="AllowInsecureHttp" value="false" />
+    <!-- AllowInvalidCertificate：false（默认）= 完整校验服务器证书；true = 放宽证书校验（仅对回环地址放行，并把真实证书链错误打印出来，其余主机仍按默认策略拒绝；生产必须 false） -->
     <add key="AllowInvalidCertificate" value="false" />
 
     <!-- ================= 演示数据编号（非敏感，按实际账套修改） ================= -->

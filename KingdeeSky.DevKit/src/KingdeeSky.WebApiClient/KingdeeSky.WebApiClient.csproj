@@ -81,7 +81,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <!-- 随输出目录复制为 KingdeeSky.WebApiClient.exe.config；命令行 csc 构建由 eng\build.ps1 补齐同一份拷贝 -->
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="App.config.example" />
     <None Include="secrets.env.example" />
   </ItemGroup>

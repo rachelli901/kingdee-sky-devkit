@@ -15,6 +15,8 @@
 """
 
 import json
+import os
+import secrets
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -37,9 +39,39 @@ SVC_QUERY = (
 )
 SVC_PUSH = "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Push.common.kdsvc"
 
-# 模拟登录账号（App.config 中 UserName/Password 与此匹配即登录成功）
+# 模拟登录账号：客户端 App.config 的 UserName 与此一致即登录成功。
+# 口令不落源码，解析优先级：
+#   1) 环境变量 KINGDEE_MOCK_PASSWORD（run-perf / run-demo 脚本注入）
+#   2) 本机 .demo-credential（已加入 .gitignore，供多次运行复用）
+#   3) 现场随机生成并写入 .demo-credential
+# 解析结果只在启动日志中打印，绝不写进源码或受版本控制的文件。
 MOCK_USER = "Administrator"
-MOCK_PASSWORD = "demo123"
+CREDENTIAL_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), ".demo-credential"
+)
+
+
+def resolve_password():
+    env = os.environ.get("KINGDEE_MOCK_PASSWORD")
+    if env:
+        return env
+    try:
+        with open(CREDENTIAL_FILE, "r", encoding="utf-8") as fh:
+            saved = fh.read().strip()
+        if saved:
+            return saved
+    except OSError:
+        pass
+    generated = secrets.token_urlsafe(9)
+    try:
+        with open(CREDENTIAL_FILE, "w", encoding="utf-8") as fh:
+            fh.write(generated + "\n")
+    except OSError:
+        pass
+    return generated
+
+
+MOCK_PASSWORD = resolve_password()
 
 # 单据状态：A=暂存/草稿  B=已提交  C=已审核
 # 模拟库：formId -> { 内码: {model, status, number} }
@@ -194,7 +226,7 @@ def handle_save(body):
 
 
 def _resolve_ids(body):
-    """从 Submit/Audit/Delete 的 data 中取 Ids，找不到时回退到 Save 返回的单据。"""
+    """从 Submit/Audit/Delete 的 data 中取 Ids；取不到（缺失字段 / 空数组 / 非法值）返回空列表。"""
     data = parse_data_json(body)
     ids = data.get("Ids") or []
     if isinstance(ids, list):
@@ -237,6 +269,9 @@ def handle_unaudit(body):
 def handle_delete(body):
     form_id = body.get("formid", "")
     ids = _resolve_ids(body)
+    if not ids:
+        # 空内码（Ids 缺失 / 空数组）按参数错误返回，而不是「删除成功（0 条）」，避免掩盖调用方传参缺陷
+        return fail_result("删除失败：未指定有效内码（Ids 不能为空）")
     store = bills.get(form_id, {})
     for bid in ids:
         rec = store.get(bid)

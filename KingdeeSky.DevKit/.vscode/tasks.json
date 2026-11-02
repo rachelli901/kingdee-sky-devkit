@@ -10,7 +10,7 @@
       "problemMatcher": []
     },
     {
-      "label": "测试：全量 62 条用例（门禁）",
+      "label": "测试：全量 67 条用例（门禁）",
       "type": "shell",
       "command": ".\\tests\\run-tests.bat",
       "problemMatcher": []
@@ -24,7 +24,7 @@
       "problemMatcher": []
     },
     {
-      "label": "测试：列出 62 条用例编号映射",
+      "label": "测试：列出 67 条用例编号映射",
       "type": "shell",
       "command": ".\\tests\\run-cases.bat",
       "args": ["-List"],

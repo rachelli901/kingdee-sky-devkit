@@ -42,6 +42,8 @@ namespace KingdeeSky.WebApiClient
         public string TokenEndpoint;
         public string Scope;
         public string AppSecSigningTemplate;
+        /// <summary>AppSec 签名时间戳格式（留空=默认 yyyy-MM-dd HH:mm:ss；也可填 unix / unix-ms 或自定义 .NET 格式串）。</summary>
+        public string AppSecTimestampFormat;
 
         // 传输安全（本机可落地）：默认强制 HTTPS，显式放行才允许明文 http 并告警
         public bool AllowInsecureHttp;
@@ -100,6 +102,7 @@ namespace KingdeeSky.WebApiClient
             s.AppSecretKey = ValueOr(app["AppSecretKey"], s.AppSecretKey);
             s.Scope = app["Scope"];
             s.AppSecSigningTemplate = app["AppSecSigningTemplate"];
+            s.AppSecTimestampFormat = app["AppSecTimestampFormat"];
             // 传输安全开关：代码默认值均为 false（强制 HTTPS / 完整证书校验）；KDSKY_ALLOW_* 环境变量可覆盖
             s.AllowInsecureHttp = TransportSecurityPolicy.ParseFlag(app["AllowInsecureHttp"], false);
             s.AllowInvalidCertificate = TransportSecurityPolicy.ParseFlag(app["AllowInvalidCertificate"], false);
@@ -158,6 +161,32 @@ namespace KingdeeSky.WebApiClient
             {
                 throw new InvalidOperationException(
                     "请先修改 App.config 中的 ServerUrl / AcctId / UserName；密码等密钥请通过环境变量、本地密钥文件、DPAPI 或 KMS 提供（见 App.config 说明与 README）。");
+            }
+
+            if (string.Equals((DeployEnv ?? string.Empty).Trim(), "prod", StringComparison.OrdinalIgnoreCase)
+                && AllowInsecureHttp)
+            {
+                throw new InvalidOperationException(
+                    "生产环境禁止 AllowInsecureHttp=true。请改用 HTTPS；如需本地 mock，请将 Environment 设置为 dev 或 test。");
+            }
+
+            string mode = (AuthMode ?? "password").Trim().ToLowerInvariant();
+            if (mode == "oauth" || mode == "oauth2")
+            {
+                if (string.IsNullOrWhiteSpace(TokenEndpoint))
+                {
+                    throw new InvalidOperationException(
+                        "AuthMode=oauth2 时必须配置 TokenEndpoint，避免启动后首次登录才失败。");
+                }
+                TransportSecurityPolicy.EnsureUrlAllowed(TokenEndpoint.Trim(), false, null, "TokenEndpoint");
+            }
+            else if (mode == "appsec" || mode == "appid_appsec")
+            {
+                if (string.IsNullOrWhiteSpace(AppSecSigningTemplate))
+                {
+                    throw new InvalidOperationException(
+                        "AuthMode=appsec 时必须配置 AppSecSigningTemplate；当前仍是占位实现。");
+                }
             }
         }
 

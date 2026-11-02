@@ -7,8 +7,8 @@
 
 ## 1 版本控制基线
 
-- 仓库根目录为 `KingdeeSky.DevKit/`，与解决方案 `KingdeeSky.DevKit.sln` 同级。
-- 忽略规则见 `.gitignore`：**密钥类文件与本地配置严禁入库**；行尾与二进制约定见 `.gitattributes`。
+- 仓库根为工作区根 `JinDie/`；示例包位于其下的 `KingdeeSky.DevKit/` 子目录，与解决方案 `KingdeeSky.DevKit.sln` 同级。
+- 忽略规则以仓库根 `.gitignore` 为准（示例包内另有 `KingdeeSky.DevKit/.gitignore` 作为补充）；**密钥类文件与本地配置严禁入库**；行尾与二进制约定见 `KingdeeSky.DevKit/.gitattributes`。
 - 首次接入或行尾规则变更后执行一次：`git add --renormalize .`
 
 ## 2 分支策略
@@ -23,8 +23,8 @@
 约定：
 
 - 一个分支只做一件事，分支名用小写英文与连字符，不使用中文分支名。
-- 合并前必须本地跑通 `tests\run-tests.bat`（当前基线 62 项全部通过），并保证 `build.bat` 可产出包；
-  定位单条失败时用 `tests\run-cases.bat -Case TC-L1-0xx`（用例编号范围见 `tests/README.md`）。
+- 合并前必须本地跑通 `tests\run-tests.bat`（当前基线 67 项全部通过），并保证 `build.bat` 可产出包；
+  定位单条失败时用 `tests\run-cases.bat -Case TC-L1-0xx`（用例编号范围 `TC-L1-001` … `TC-L1-067`，详见 `tests/README.md`）。
 - 禁止向已发布标签（`vX.Y.Z`）提交任何改动；变更须走新版本。
 
 ## 3 提交信息规范
@@ -67,13 +67,22 @@
 3. 运行 `build.bat`，在 `artifacts/` 得到 `KingdeeSky.DevKit-<版本>-<时间戳>.zip`。
 4. 在发布提交上打标签：`git tag -a vX.Y.Z -m "release vX.Y.Z"`。
 5. 按 `deploy/部署与调试指南.md` 与 `deploy/回滚预案.md` 执行部署与回滚准备。
-6. 如启用 CI，推送标签触发 `.github/workflows/ci.yml` 产出构件。
+6. 如启用 CI，推送提交 / 标签触发仓库根 `.github/workflows/ci.yml` 产出构件。
 
 ## 6 本机受限说明
 
 - `src/KingdeeSky.Plugins` 依赖金蝶 BOS 程序集（商业软件，不可分发），在**无授权星空环境**的机器上无法编译；
   在授权环境执行 `lib/copy-kingdee-dlls.bat` 取得 DLL 后，`build.bat` 会自动纳入 Plugins 编译。
 - 上述边界不改变分支与发布契约，但影响“哪些产物可在何环境构建”，须在交付说明中如实标注。
+
+## 6.1 编译源文件清单的约定（易踩坑）
+
+`tests/run-tests.ps1` 与 `tests/run-cases.ps1` 用**显式源文件清单**编译被测代码，而不是“递归抓取全部 `.cs`”。这是刻意为之：
+
+- `src/KingdeeSky.WebApiClient/Program.cs` 自带 `Main(string[])`，与测试入口 `KingdeeSky.WebApiClient.Tests/TestProgram.cs` 的 `Main` 冲突；
+  一旦改成递归抓取全部 `.cs`，编译会直接失败（`CS0017：定义了多个入口点`）。
+- 编译测试工程时统一排除：`Program.cs`、`Properties/AssemblyInfo.cs`、`Diagnostics/HealthCheck.cs`。
+  `run-tests.ps1` 与 `run-cases.ps1` 的两份清单必须保持一致，改动其中一份时同步另一份。
 
 ## 7 作者与署名
 

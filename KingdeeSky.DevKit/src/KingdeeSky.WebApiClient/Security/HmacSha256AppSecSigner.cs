@@ -2,6 +2,7 @@
 // Repository: https://github.com/rachelli901/kingdee-sky-devkit
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,23 +16,47 @@ namespace KingdeeSky.WebApiClient.Security
     /// </summary>
     public sealed class HmacSha256AppSecSigner : IAppSecSigner
     {
+        /// <summary>默认时间戳格式（与占位说明中的「年-月-日 时:分:秒」一致）。</summary>
+        public const string DefaultTimestampFormat = "yyyy-MM-dd HH:mm:ss";
+
+        /// <summary>时间戳格式特殊取值：Unix 秒整数戳。</summary>
+        public const string UnixSecondsFormat = "unix";
+
+        /// <summary>时间戳格式特殊取值：Unix 毫秒整数戳。</summary>
+        public const string UnixMillisecondsFormat = "unix-ms";
+
         private readonly string _template;
         private readonly Func<DateTime> _clock;
         private readonly Func<string> _nonceFactory;
+        private readonly string _timestampFormat;
 
         public HmacSha256AppSecSigner(string template)
-            : this(template, null, null)
+            : this(template, null, null, null)
         {
         }
 
         /// <param name="clock">时间戳工厂（默认 UtcNow，测试可注入固定时间）。</param>
         /// <param name="nonceFactory">随机串工厂（默认 GUID，测试可注入固定值）。</param>
         public HmacSha256AppSecSigner(string template, Func<DateTime> clock, Func<string> nonceFactory)
+            : this(template, clock, nonceFactory, null)
+        {
+        }
+
+        /// <param name="timestampFormat">
+        /// 时间戳格式（抽为可配置项，对应 App.config 的 AppSecTimestampFormat）：留空取 <see cref="DefaultTimestampFormat"/>；
+        /// 可填协议要求的自定义 .NET 格式串，或用 <see cref="UnixSecondsFormat"/> / <see cref="UnixMillisecondsFormat"/> 输出秒/毫秒整数戳。
+        /// 真实签名必须以账套【第三方系统登录授权】的在线测试样本对齐，勿凭猜测。
+        /// </param>
+        public HmacSha256AppSecSigner(string template, Func<DateTime> clock, Func<string> nonceFactory, string timestampFormat)
         {
             _template = template ?? string.Empty;
             _clock = clock ?? (() => DateTime.UtcNow);
             _nonceFactory = nonceFactory ?? (() => Guid.NewGuid().ToString("N"));
+            _timestampFormat = string.IsNullOrWhiteSpace(timestampFormat) ? DefaultTimestampFormat : timestampFormat.Trim();
         }
+
+        /// <summary>当前生效的时间戳格式。</summary>
+        public string TimestampFormat { get { return _timestampFormat; } }
 
         public string Name { get { return "hmac-sha256"; } }
 
@@ -50,7 +75,7 @@ namespace KingdeeSky.WebApiClient.Security
                 ? _nonceFactory()
                 : context.Nonce;
             string timestamp = string.IsNullOrWhiteSpace(context.Timestamp)
-                ? _clock().ToString("yyyy-MM-dd HH:mm:ss")
+                ? FormatTimestamp(_clock())
                 : context.Timestamp;
             string body = context.Body ?? string.Empty;
             string bodyHash = Sha256Hex(body);
@@ -75,6 +100,35 @@ namespace KingdeeSky.WebApiClient.Security
                 Timestamp = timestamp,
                 Nonce = nonce
             };
+        }
+
+        /// <summary>
+        /// 按配置格式生成时间戳：unix / unix-ms 输出秒/毫秒整数戳，其余按 .NET 格式串输出。
+        /// 一律用固定区域性（InvariantCulture），避免不同区域设置产生格式差异。
+        /// </summary>
+        private string FormatTimestamp(DateTime now)
+        {
+            if (string.Equals(_timestampFormat, UnixSecondsFormat, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToUnixSeconds(now).ToString(CultureInfo.InvariantCulture);
+            }
+            if (string.Equals(_timestampFormat, UnixMillisecondsFormat, StringComparison.OrdinalIgnoreCase))
+            {
+                return ToUnixMilliseconds(now).ToString(CultureInfo.InvariantCulture);
+            }
+            return now.ToString(_timestampFormat, CultureInfo.InvariantCulture);
+        }
+
+        private static long ToUnixSeconds(DateTime value)
+        {
+            DateTime utc = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
+            return (long)(utc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+        }
+
+        private static long ToUnixMilliseconds(DateTime value)
+        {
+            DateTime utc = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
+            return (long)(utc - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
         }
 
         private static string Sha256Hex(string input)

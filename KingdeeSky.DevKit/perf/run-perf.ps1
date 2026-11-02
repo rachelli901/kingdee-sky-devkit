@@ -90,7 +90,11 @@ if ($LASTEXITCODE -ne 0) {
 Write-Output ('==> Compiled: ' + $exe)
 
 Write-Output '==> [4/5] Run perf probe (inject KINGDEE_PASSWORD, scrubbed output)'
-$env:KINGDEE_PASSWORD = 'demo123'
+# The stub accepts any credential, so a fresh random value per run is enough to
+# exercise the client path. Deriving it here (never a literal in the repo) keeps
+# the tree free of plaintext secrets; the probe reads it back from the same
+# environment variable so the logger can scrub it from the output.
+$env:KINGDEE_PASSWORD = [Guid]::NewGuid().ToString('N')
 $out = & $exe -url $ServerUrl -iterations $Iterations -thresholdMs $ThresholdMs 2>&1
 $probeExit = $LASTEXITCODE
 Remove-Item Env:KINGDEE_PASSWORD -ErrorAction SilentlyContinue

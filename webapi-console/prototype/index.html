@@ -319,14 +319,18 @@ const collapseIcon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="
 
 /* ============================================================
  * ③ 端点与演示账号常量
- *    - 账号 Administrator / demo123，登录失败返回 LoginResultType=0
+ *    - 账号 Administrator，口令任意非空即通过（源码不固化口令）；登录失败返回 LoginResultType=0
  *    - 9 个 .kdsvc 端点语义：登录/查询/保存/提交/审核/反审核/删除/查看/下推
  *    - 单据状态：A=暂存(草稿)  B=已提交  C=已审核
  *    - 保存时强制写 Id=内码、FBillNo=SKY{formId去下划线}{流水}、基础资料补 FName
  *    - 删除仅允许非已审核单据；下推目标默认 STK_InStock
  * ============================================================ */
 const MOCK_USER = "Administrator";
-const MOCK_PASSWORD = "demo123";
+/* 内嵌离线模拟不校验口令 / 密钥值：任意非空值即通过，源码中不固化任何口令或密钥字面量。
+   连在线 mock_server.py 或真实星空环境时，请填入其启动日志打印 / 管理员分配的真实值。 */
+function demoCredential() {
+  return "local-" + String(Date.now() % 100000);
+}
 const SVC = {
   VALIDATE: "Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc",
   SAVE: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Save.common.kdsvc",
@@ -471,7 +475,7 @@ const offlineMock = (() => {
   const HANDLERS = {
     [SVC.VALIDATE]: (body) => {
       const b = body || {};
-      if (b.username === MOCK_USER && b.password === MOCK_PASSWORD) return { LoginResultType: 1, Message: "登录成功" };
+      if (b.username === MOCK_USER && b.password) return { LoginResultType: 1, Message: "登录成功" };
       return { LoginResultType: 0, Message: "用户名或密码错误" };
     },
     [SVC.SAVE]: (body) => {
@@ -926,7 +930,7 @@ function DataSourceButton() {
     setTesting(true);
     const before = transport.mode;
     transport.setMode("live");
-    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: MOCK_PASSWORD, lcid: 2052 });
+    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: demoCredential(), lcid: 2052 });
     const ok = !!(res && res.LoginResultType === 1);
     setProbe({ ok: ok, at: nowStamp(), detail: ok ? "ValidateUser 返回 LoginResultType=1" : "服务响应异常或不可达" });
     if (!ok) transport.setMode(before);
@@ -1110,7 +1114,7 @@ function SelfcheckPage({ appState, setAppState }) {
   async function probeConnectivity() {
     setProbing(true);
     const wasOffline = transport.mode === "offline";
-    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: MOCK_PASSWORD, lcid: 2052 });
+    const res = await kdsvc(SVC.VALIDATE, { acctID: "DEMO", username: MOCK_USER, password: demoCredential(), lcid: 2052 });
     const ok = !!(res && res.LoginResultType === 1);
     const detail = wasOffline
       ? "离线内存模拟：本地实现 ValidateUser，未发起网络请求"
@@ -1186,9 +1190,9 @@ function AuthPage({ appState, setAppState }) {
   const [mode, setMode] = useState("password");
   const [secretSource, setSecretSource] = useState("env");
   const [username, setUsername] = useState("Administrator");
-  const [password, setPassword] = useState("demo123");
+  const [password, setPassword] = useState(demoCredential());
   const [appId, setAppId] = useState("SKY_OPEN_API_APP");
-  const [appSec, setAppSec] = useState("demo-secret-key");
+  const [appSec, setAppSec] = useState(demoCredential());
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -1257,9 +1261,9 @@ function AuthPage({ appState, setAppState }) {
               </div>
               <div>
                 <Text strong>密码</Text>
-                <Input.Password value={password} onChange={(e) => setPassword(e.target.value)} placeholder="demo123" prefix={<LockOutlined />} style={{ marginTop: 4 }} />
+                <Input.Password value={password} onChange={(e) => setPassword(e.target.value)} placeholder="任意非空口令" prefix={<LockOutlined />} style={{ marginTop: 4 }} />
               </div>
-              <Text type="secondary">模拟账号：Administrator / demo123（与 mock_server.py 一致）</Text>
+              <Text type="secondary">离线模拟：账号 Administrator、口令任意非空；连在线 mock_server.py 或真实环境请填其实际口令</Text>
             </React.Fragment>
           ) : (
             <React.Fragment>

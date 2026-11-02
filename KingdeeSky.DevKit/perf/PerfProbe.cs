@@ -36,7 +36,11 @@ namespace KingdeeSky.Perf
             if (thresholdMs < 1) { thresholdMs = 5000; }
 
             SafeLogger logger = new SafeLogger(LogLevel.Warn, null);
-            logger.RegisterSecret("demo123");
+            // The credential is never hard-coded: run-perf.ps1 injects a per-run
+            // value into KINGDEE_PASSWORD, and registering it lets the logger
+            // scrub it from every line the probe writes.
+            string probeSecret = Environment.GetEnvironmentVariable("KINGDEE_PASSWORD");
+            if (!string.IsNullOrEmpty(probeSecret)) { logger.RegisterSecret(probeSecret); }
 
             AuthContext context = new AuthContext();
             context.AcctId = "PERFACCT";

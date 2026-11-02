@@ -49,6 +49,7 @@
     <Compile Include="SecretProviderTests.cs" />
     <Compile Include="ConfigTests.cs" />
     <Compile Include="ClientTests.cs" />
+    <Compile Include="TransportSecurityTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <!-- 被测源码（排除 Program.cs，避免与测试 Main 冲突） -->
@@ -60,6 +61,8 @@
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\DpapiSecretProvider.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\EnvironmentSecretProvider.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\FileSecretProvider.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\HmacSha256AppSecSigner.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\IAppSecSigner.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\IAuthProvider.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\ISecretProvider.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\KmsSecretProvider.cs" />
@@ -67,6 +70,7 @@
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\PasswordAuthProvider.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\SecretProviderFactory.cs" />
     <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\SecretRedactor.cs" />
+    <Compile Include="..\..\src\KingdeeSky.WebApiClient\Security\TransportSecurityPolicy.cs" />
   </ItemGroup>
   <ItemGroup>
     <!-- Settings.Load 依赖 app.config：随输出目录复制为 Tests.exe.config -->

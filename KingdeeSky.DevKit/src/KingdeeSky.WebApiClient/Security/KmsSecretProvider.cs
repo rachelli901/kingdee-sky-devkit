@@ -25,6 +25,9 @@ namespace KingdeeSky.WebApiClient.Security
         {
             if (string.IsNullOrWhiteSpace(baseUrl)) { throw new ArgumentException("KMS BaseUrl 未配置（SecretStore=kms 时必填）"); }
             _baseUrl = baseUrl.TrimEnd('/');
+            // KMS 请求携带访问令牌，禁止明文传输。与业务 API 的本地 HTTP
+            // 降级开关分开，避免把开发便利性扩散到密钥通道。
+            TransportSecurityPolicy.EnsureUrlAllowed(_baseUrl, false, null, "KMS BaseUrl");
             _token = token;
         }
 
@@ -33,6 +36,7 @@ namespace KingdeeSky.WebApiClient.Security
         public bool TryGet(string key, out string value)
         {
             value = null;
+            if (string.IsNullOrWhiteSpace(key)) { return false; }
             string url = _baseUrl + "/" + Uri.EscapeDataString(key);
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";

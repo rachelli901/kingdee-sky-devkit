@@ -3,6 +3,8 @@
 
 using System;
 using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using KingdeeSky.WebApiClient.Logging;
 using KingdeeSky.WebApiClient.Security;
 
@@ -60,8 +62,24 @@ namespace KingdeeSky.WebApiClient
 
             if (settings.AllowInvalidCertificate)
             {
-                logger.Warn("AllowInvalidCertificate=true 已放行任意服务器证书，仅限本地调试；生产环境必须保持 false 并使用有效证书。");
-                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
+                // 放宽范围收敛：只对回环地址（本机 mock / 本地调试站点）放行证书错误，其余主机一律按默认策略拒绝；
+                // 并把真实证书链错误打印出来，避免「静默通过」掩盖中间人/证书过期等问题。
+                // 注意：ServerCertificateValidationCallback 是进程级静态设置，一旦注册本轮进程内所有 HTTPS 请求都会走它，
+                // 因此这里的回环判定必须保留——它让非本机请求重新落到「拒绝」分支上。
+                logger.Warn("AllowInvalidCertificate=true：仅对回环地址（localhost / 127.0.0.1 / ::1）放行证书错误，其余主机仍按默认策略校验；生产环境必须保持 false。");
+                ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                {
+                    if (sslPolicyErrors == SslPolicyErrors.None) { return true; }
+                    string host = TryGetRequestHost(sender);
+                    string detail = DescribeCertificateErrors(chain, sslPolicyErrors);
+                    if (!IsLoopbackHost(host))
+                    {
+                        logger.Error(string.Format("服务器证书校验失败（{0}）：{1}；已按默认策略拒绝该连接。", host ?? "未知主机", detail));
+                        return false;
+                    }
+                    logger.Error(string.Format("已放行回环地址 {0} 的证书错误（AllowInvalidCertificate=true）：{1}", host, detail));
+                    return true;
+                };
             }
 
             ISecretProvider secrets;
@@ -69,7 +87,7 @@ namespace KingdeeSky.WebApiClient
             try
             {
                 secrets = settings.CreateSecretProvider();
-                authProvider = AuthProviderFactory.Create(settings.AuthMode, settings.AppSecSigningTemplate);
+                authProvider = AuthProviderFactory.Create(settings.AuthMode, settings.AppSecSigningTemplate, settings.AppSecTimestampFormat);
             }
             catch (Exception ex)
             {
@@ -205,6 +223,46 @@ namespace KingdeeSky.WebApiClient
             if (string.IsNullOrEmpty(key)) { return; }
             string value;
             if (secrets.TryGet(key, out value) && !string.IsNullOrEmpty(value)) { logger.RegisterSecret(value); }
+        }
+
+        /// <summary>取发起 TLS 握手的主机名（HttpWebRequest 优先，其余 WebRequest 退化到 RequestUri）。</summary>
+        private static string TryGetRequestHost(object sender)
+        {
+            var request = sender as HttpWebRequest;
+            if (request != null && request.Address != null) { return request.Address.Host; }
+            var generic = sender as WebRequest;
+            if (generic != null && generic.RequestUri != null) { return generic.RequestUri.Host; }
+            return null;
+        }
+
+        /// <summary>是否回环地址（localhost / 127.0.0.0/8 / ::1）。</summary>
+        private static bool IsLoopbackHost(string host)
+        {
+            if (string.IsNullOrEmpty(host)) { return false; }
+            if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)) { return true; }
+            IPAddress address;
+            if (IPAddress.TryParse(host, out address)) { return IPAddress.IsLoopback(address); }
+            return false;
+        }
+
+        /// <summary>把证书链里的真实错误汇总为一行可读文本（含每个链元素的错误状态）。</summary>
+        private static string DescribeCertificateErrors(X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("SslPolicyErrors=").Append(sslPolicyErrors);
+            if (chain != null)
+            {
+                foreach (X509ChainElement element in chain.ChainElements)
+                {
+                    foreach (X509ChainStatus status in element.ChainElementStatus)
+                    {
+                        if (status.Status == X509ChainStatusFlags.NoError) { continue; }
+                        sb.Append("；").Append(element.Certificate != null ? element.Certificate.Subject : "(未知证书)")
+                          .Append(" → ").Append(status.Status).Append("：").Append(status.StatusInformation);
+                    }
+                }
+            }
+            return sb.ToString();
         }
 
         private static void Pause()

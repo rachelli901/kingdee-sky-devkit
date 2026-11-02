@@ -22,7 +22,7 @@
       "stopAtEntry": false
     },
     {
-      "name": "调试：测试运行器（62 条用例）",
+      "name": "调试：测试运行器（67 条用例）",
       "type": "clr",
       "request": "launch",
       "program": "${workspaceFolder}\\tests\\KingdeeSky.WebApiClient.Tests\\bin\\Debug\\KingdeeSky.WebApiClient.Tests.exe",

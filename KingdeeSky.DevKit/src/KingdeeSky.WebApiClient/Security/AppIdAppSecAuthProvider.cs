@@ -30,6 +30,12 @@ namespace KingdeeSky.WebApiClient.Security
 
         public string Name { get { return "appsec"; } }
 
+        /// <summary>
+        /// 是否已注入真实签名器。false 表示处于占位状态：Authenticate 会抛 NotSupportedException。
+        /// 自检据此判断「配置了 AppSecSigningTemplate 但签名器未生效」这类假通过。
+        /// </summary>
+        internal bool HasSigner { get { return _signer != null; } }
+
         public LoginResult Authenticate(IApiTransport transport, AuthContext context)
         {
             if (_signer == null)

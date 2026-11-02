@@ -120,6 +120,22 @@ namespace KingdeeSky.WebApiClient.Tests
             {
                 Assert.Throws<ArgumentException>(() => client.SetRequestHeader("", "v"));
                 Assert.Throws<ArgumentException>(() => client.SetRequestHeader(null, "v"));
+                Assert.Throws<ArgumentException>(() => client.SetRequestHeader("   ", "v"));
+            }
+        }
+
+        [Test]
+        public static void SetRequestHeader_ReservedName_Throws()
+        {
+            using (var client = new KingdeeWebApiClient("https://localhost/K3Cloud/", "A1", new FakeAuthProvider(), Ctx(), null))
+            {
+                Assert.Throws<ArgumentException>(() => client.SetRequestHeader("Authorization", "Bearer x"));
+                Assert.Throws<ArgumentException>(() => client.SetRequestHeader("Content-Type", "text/plain"));
+                client.SetRequestHeader("X-Custom", "v");
+                Assert.IsTrue(client.ExtraHeaders.ContainsKey("X-Custom"));
+                client.SetRequestHeader("x-custom", "updated");
+                Assert.AreEqual(1, client.ExtraHeaders.Count);
+                Assert.AreEqual("updated", client.ExtraHeaders["X-CUSTOM"]);
             }
         }
 
@@ -185,6 +201,46 @@ namespace KingdeeSky.WebApiClient.Tests
         {
             var signer = new HmacSha256AppSecSigner("{appId}");
             Assert.Throws<ArgumentNullException>(() => signer.Sign(null));
+        }
+
+        [Test]
+        public static void HmacSha256AppSecSigner_TimestampFormat_DefaultsToDatePattern()
+        {
+            var signer = new HmacSha256AppSecSigner(
+                "{timestamp}",
+                () => new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+                () => "n");
+
+            Assert.AreEqual(HmacSha256AppSecSigner.DefaultTimestampFormat, signer.TimestampFormat);
+            AppSecSignatureResult r = signer.Sign(new AppSecSigningContext { AppId = "app1", AppSecret = "secr3t" });
+            Assert.AreEqual("2026-01-02 03:04:05", r.Timestamp);
+        }
+
+        [Test]
+        public static void HmacSha256AppSecSigner_TimestampFormat_UnixSecondsAndMilliseconds()
+        {
+            Func<DateTime> clock = () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            var seconds = new HmacSha256AppSecSigner("{timestamp}", clock, () => "n", "unix");
+            Assert.AreEqual("1767225600",
+                seconds.Sign(new AppSecSigningContext { AppId = "app1", AppSecret = "secr3t" }).Timestamp);
+
+            var millis = new HmacSha256AppSecSigner("{timestamp}", clock, () => "n", "unix-ms");
+            Assert.AreEqual("1767225600000",
+                millis.Sign(new AppSecSigningContext { AppId = "app1", AppSecret = "secr3t" }).Timestamp);
+        }
+
+        [Test]
+        public static void HmacSha256AppSecSigner_TimestampFormat_CustomDotNetPattern()
+        {
+            var signer = new HmacSha256AppSecSigner(
+                "{timestamp}",
+                () => new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                () => "n",
+                "yyyyMMddHHmmss");
+
+            Assert.AreEqual("20260101000000",
+                signer.Sign(new AppSecSigningContext { AppId = "app1", AppSecret = "secr3t" }).Timestamp);
         }
     }
 }

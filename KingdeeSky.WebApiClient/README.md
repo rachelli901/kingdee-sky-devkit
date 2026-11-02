@@ -6,21 +6,32 @@
 
 > 说明：这是**协议级模拟**，不是金蝶官方实现，也不包含金蝶任何二进制。
 > 业务校验、审批流、反写、权限等企业逻辑不在模拟范围内。
-> 接真实环境时，只需把 `app/App.config` 改回正式站点地址与账套即可，客户端代码零改动。
+> 客户端源码**只有一份**，位于 `KingdeeSky.DevKit/src/KingdeeSky.WebApiClient/`；本目录的 `app/`
+> 是**构建输出**（已加入 `.gitignore`，不入库），由 `build-demo.ps1` 现场编译生成。
+> 接真实环境时，只需改 `KingdeeSky.DevKit/src/KingdeeSky.WebApiClient/App.config` 的站点与账套，
+> 客户端代码零改动。
 
 ---
 
 ## 一、快速开始（Windows）
 
-**前置条件**：Python 3（`python` 可用）、.NET Framework 4.8（Win10/11 系统自带）。
+**前置条件**：Python 3（`python` 可用）、PowerShell、.NET Framework 4.8（Win10/11 系统自带）。
 
-方式一（推荐）：双击 `run-demo.bat`
-- 自动检测端口 18080，未占用则启动模拟服务（新窗口），随后打开客户端菜单程序。
+方式一（推荐）：双击 `run-demo.bat`，脚本依次做三件事：
+1. 调用 `build-demo.ps1`，用 .NET Framework 的 `csc` 从 DevKit 源码编译客户端到 `app/`；
+2. 检测端口 18080，未占用则启动本地模拟服务（新窗口）；
+3. 打开客户端菜单程序。
 
 方式二（Git Bash / 终端）：
 ```bash
 ./run-demo.sh
 ```
+
+**登录口令不写在仓库任何文件里**，模拟服务与客户端共用同一个值，按以下优先级解析：
+
+1. 环境变量 `KINGDEE_PASSWORD`（你想固定口令时先自己设置）；
+2. 本目录下 `.demo-credential`（已有 `.gitignore` 规则忽略，供本机多次运行复用）；
+3. 前两者都没有时，由 `mock_server.py` 现场随机生成并写入 `.demo-credential`。
 
 客户端菜单（与原 `KingdeeSky.DevKit` 示例完全一致）：
 ```
@@ -39,20 +50,22 @@
 ## 二、目录结构
 
 ```
-KingdeeSky.WebApiClient-Demo/
+KingdeeSky.WebApiClient/
 ├── mock_server.py          # 金蝶 WebAPI 本地模拟服务（仅 Python 3 标准库，无第三方依赖）
-├── run-demo.bat            # Windows 一键运行（双击即可）
-├── run-demo.sh             # Git Bash / POSIX 一键运行
+├── build-demo.ps1          # 从 DevKit 源码编译客户端到 app/（构建入口）
+├── run-demo.bat            # Windows 一键：构建 → 起模拟服务 → 跑客户端（双击即可）
+├── run-demo.sh             # Git Bash / POSIX 一键：同上
 ├── README.md               # 本说明
-└── app/                    # 演示客户端（由原示例源码编译，仅改了 App.config）
+├── .demo-credential        # 本机口令（首次运行时生成，已被 .gitignore 忽略，不入库）
+└── app/                    # 构建输出目录（不入库），由 build-demo.ps1 生成
     ├── KingdeeSky.WebApiClient.exe        # 编译产物（.NET Framework 4.8）
-    ├── KingdeeSky.WebApiClient.exe.config # 演示连接配置
-    ├── Program.cs / KingdeeWebApiClient.cs / Scenarios.cs / Properties/AssemblyInfo.cs
-    └── App.config          # 演示配置源文件（编译时复制为 *.exe.config）
+    ├── KingdeeSky.WebApiClient.exe.config # 由 DevKit 的 App.config 复制而来
+    ├── App.config.example                 # 配置模板
+    └── secrets.env.example                # 密钥环境变量模板
 ```
 
-`app/` 下四个 `.cs` 与 `KingdeeSky.DevKit/src/KingdeeSky.WebApiClient/` 完全一致，**未改动业务逻辑**，
-仅 `App.config` 指向本地模拟服务。
+`app/` 目录由构建脚本生成，仓库中**不保存**它的任何内容；客户端源码以
+`KingdeeSky.DevKit/src/KingdeeSky.WebApiClient/` 为唯一真源。
 
 ---
 
@@ -60,7 +73,7 @@ KingdeeSky.WebApiClient-Demo/
 
 启动：`python mock_server.py [port]`（默认端口 **18080**）。
 
-模拟账号：`Administrator / demo123`
+模拟账号：用户名 `Administrator`；口令按上文优先级解析（不写死在源码里），启动日志会打印本次生效的口令。
 
 覆盖端点（路径与 `KingdeeWebApiClient.cs` 常量一一对应）：
 
@@ -82,13 +95,19 @@ KingdeeSky.WebApiClient-Demo/
 
 ## 四、换成真实金蝶环境
 
-1. 打开 `app/App.config`（或 `app/KingdeeSky.WebApiClient.exe.config`）；
-2. 修改：
+1. 编辑 `KingdeeSky.DevKit/src/KingdeeSky.WebApiClient/App.config`（这是唯一配置源，构建时复制为
+   `app\KingdeeSky.WebApiClient.exe.config`）：
    - `ServerUrl` → 你的星空站点，如 `https://xxx.kdcloud.com/` 或 `http://应用服务器IP/K3Cloud/`；
    - `AcctId` → 数据中心（账套）ID；
-   - `Password` → 你的密码；
    - `OrgNumber / SupplierNumber / MaterialNumber / BillTypeNumber` → 账套内真实基础资料编号；
-3. 重新运行 `KingdeeSky.WebApiClient.exe`。
+   - 需要时改 `AuthMode`（`password` / `oauth2` / `appsec`）与 `SecretStore`（`env` / `file` / `dpapi` / `kms`）；
+   - 生产环境把 `AllowInsecureHttp` 改回 `false`（强制 HTTPS）。
+2. 口令等密钥**不写进配置文件**，而是交给密钥源，例如：
+   - 环境变量：`set KINGDEE_PASSWORD=<你的口令>`（PowerShell：`$env:KINGDEE_PASSWORD="<你的口令>"`），
+     键名与配置里的 `PasswordKey` 对应；其他密钥同理（`KINGDEE_CLIENT_ID` / `KINGDEE_CLIENT_SECRET` 等）；
+   - 或改用 `SecretStore=file` / `dpapi` / `kms`，把密钥放到仓库之外的文件或密钥服务中，
+     模板见 `App.config.example` 与 `secrets.env.example`。
+3. 重新运行 `run-demo.bat`（会重新编译并把 App.config 复制到 `app/`）。
 
 > 写操作的返回结构（`Result.ResponseStatus.IsSuccess / SuccessEntitys`）与真实星空一致，
 > 客户端解析逻辑无需调整。
@@ -97,14 +116,10 @@ KingdeeSky.WebApiClient-Demo/
 
 ## 五、重新编译客户端（可选）
 
-`app/` 已内置编译好的 exe，一般无需重编。如需验证从源码构建：
+`app/` 是构建输出，每次运行 `run-demo` 都会重新编译；也可单独构建：
 
-```bat
-C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /nologo /target:exe ^
-  /out:KingdeeSky.WebApiClient.exe ^
-  /r:System.Web.Extensions.dll /r:System.Configuration.dll ^
-  Program.cs KingdeeWebApiClient.cs Scenarios.cs Properties\AssemblyInfo.cs
-copy App.config KingdeeSky.WebApiClient.exe.config
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build-demo.ps1
 ```
 
 （也可用 Visual Studio / MSBuild 打开原工程 `KingdeeSky.DevKit.sln` 编译 WebApiClient 工程。）
@@ -119,6 +134,7 @@ copy App.config KingdeeSky.WebApiClient.exe.config
 - 反审核 → 删除成功；删除已审核单据被拒（提示先反审核）
 - 下推：采购订单 → 采购入库单（STK_InStock），目标单可查询到
 - 未知端点返回 404；响应头顺序合规（.NET HttpWebRequest 严格解析通过）
+- 从源码构建 → 起模拟服务 → 跑完整链路（`login/query/save/submit/audit/view`）在本机复跑通过
 
 ---
 

@@ -17,6 +17,13 @@ namespace KingdeeSky.WebApiClient.Security
         /// <param name="appSecSigningTemplate">AppID/AppSec 签名模板；仅 appsec 模式使用，空则保持占位实现。</param>
         public static IAuthProvider Create(string mode, string appSecSigningTemplate)
         {
+            return Create(mode, appSecSigningTemplate, null);
+        }
+
+        /// <param name="appSecSigningTemplate">AppID/AppSec 签名模板；仅 appsec 模式使用，空则保持占位实现。</param>
+        /// <param name="appSecTimestampFormat">AppSec 签名时间戳格式；留空取签名器默认值（yyyy-MM-dd HH:mm:ss）。</param>
+        public static IAuthProvider Create(string mode, string appSecSigningTemplate, string appSecTimestampFormat)
+        {
             switch ((mode ?? "password").Trim().ToLowerInvariant())
             {
                 case "":
@@ -29,7 +36,8 @@ namespace KingdeeSky.WebApiClient.Security
                 case "appid_appsec":
                     if (!string.IsNullOrWhiteSpace(appSecSigningTemplate))
                     {
-                        return new AppIdAppSecAuthProvider(new HmacSha256AppSecSigner(appSecSigningTemplate));
+                        return new AppIdAppSecAuthProvider(
+                            new HmacSha256AppSecSigner(appSecSigningTemplate, null, null, appSecTimestampFormat));
                     }
                     return new AppIdAppSecAuthProvider();
                 default:

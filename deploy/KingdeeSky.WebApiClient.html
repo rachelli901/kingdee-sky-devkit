@@ -7120,14 +7120,18 @@ const collapseIcon = /*#__PURE__*/_react.default.createElement("svg", {
 
 /* ============================================================
  * ③ 端点与演示账号常量
- *    - 账号 Administrator / demo123，登录失败返回 LoginResultType=0
+ *    - 账号 Administrator，口令任意非空即通过（源码不固化口令）；登录失败返回 LoginResultType=0
  *    - 9 个 .kdsvc 端点语义：登录/查询/保存/提交/审核/反审核/删除/查看/下推
  *    - 单据状态：A=暂存(草稿)  B=已提交  C=已审核
  *    - 保存时强制写 Id=内码、FBillNo=SKY{formId去下划线}{流水}、基础资料补 FName
  *    - 删除仅允许非已审核单据；下推目标默认 STK_InStock
  * ============================================================ */
 const MOCK_USER = "Administrator";
-const MOCK_PASSWORD = "demo123";
+/* 内嵌离线模拟不校验口令 / 密钥值：任意非空值即通过，源码中不固化任何口令或密钥字面量。
+   连在线 mock_server.py 或真实星空环境时，请填入其启动日志打印 / 管理员分配的真实值。 */
+function demoCredential() {
+  return "local-" + String(Date.now() % 100000);
+}
 const SVC = {
   VALIDATE: "Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc",
   SAVE: "Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Save.common.kdsvc",
@@ -7339,7 +7343,7 @@ const offlineMock = (() => {
   const HANDLERS = {
     [SVC.VALIDATE]: body => {
       const b = body || {};
-      if (b.username === MOCK_USER && b.password === MOCK_PASSWORD) return {
+      if (b.username === MOCK_USER && b.password) return {
         LoginResultType: 1,
         Message: "登录成功"
       };
@@ -8057,7 +8061,7 @@ function DataSourceButton() {
     const res = await kdsvc(SVC.VALIDATE, {
       acctID: "DEMO",
       username: MOCK_USER,
-      password: MOCK_PASSWORD,
+      password: demoCredential(),
       lcid: 2052
     });
     const ok = !!(res && res.LoginResultType === 1);
@@ -8411,7 +8415,7 @@ function SelfcheckPage({
     const res = await kdsvc(SVC.VALIDATE, {
       acctID: "DEMO",
       username: MOCK_USER,
-      password: MOCK_PASSWORD,
+      password: demoCredential(),
       lcid: 2052
     });
     const ok = !!(res && res.LoginResultType === 1);
@@ -8528,9 +8532,9 @@ function AuthPage({
   const [mode, setMode] = (0, _react.useState)("password");
   const [secretSource, setSecretSource] = (0, _react.useState)("env");
   const [username, setUsername] = (0, _react.useState)("Administrator");
-  const [password, setPassword] = (0, _react.useState)("demo123");
+  const [password, setPassword] = (0, _react.useState)(demoCredential());
   const [appId, setAppId] = (0, _react.useState)("SKY_OPEN_API_APP");
-  const [appSec, setAppSec] = (0, _react.useState)("demo-secret-key");
+  const [appSec, setAppSec] = (0, _react.useState)(demoCredential());
   const [result, setResult] = (0, _react.useState)(null);
   const [loading, setLoading] = (0, _react.useState)(false);
   const [error, setError] = (0, _react.useState)("");
@@ -8644,14 +8648,14 @@ function AuthPage({
   }, "\u5BC6\u7801"), /*#__PURE__*/_react.default.createElement(_qianfanAntdKit.Input.Password, {
     value: password,
     onChange: e => setPassword(e.target.value),
-    placeholder: "demo123",
+    placeholder: "\u4EFB\u610F\u975E\u7A7A\u53E3\u4EE4",
     prefix: /*#__PURE__*/_react.default.createElement(_icons.LockOutlined, null),
     style: {
       marginTop: 4
     }
   })), /*#__PURE__*/_react.default.createElement(Text, {
     type: "secondary"
-  }, "\u6A21\u62DF\u8D26\u53F7\uFF1AAdministrator / demo123\uFF08\u4E0E mock_server.py \u4E00\u81F4\uFF09")) : /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(Text, {
+  }, "\u79BB\u7EBF\u6A21\u62DF\uFF1A\u8D26\u53F7 Administrator\u3001\u53E3\u4EE4\u4EFB\u610F\u975E\u7A7A\uFF1B\u8FDE\u5728\u7EBF mock_server.py \u6216\u771F\u5B9E\u73AF\u5883\u8BF7\u586B\u5176\u5B9E\u9645\u53E3\u4EE4")) : /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(Text, {
     strong: true
   }, "AppID"), /*#__PURE__*/_react.default.createElement(_qianfanAntdKit.Input, {
     value: appId,
