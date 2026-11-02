@@ -99,6 +99,7 @@ KingdeeSky.DevKit/
    ├─ 回归测试方案.md                  回归分层（L1 代码级 / L2 协议级 / L3 业务级）、用例分组与执行流程、进入与退出准则、缺陷分级与回归触发
    ├─ 回归测试用例执行记录模板.md      单次回归执行的留档模板
    ├─ 回滚预案.md                      版本化产物保留、发布前检查清单、WebApiClient / 插件 / SQL 回滚步骤、事故复盘清单
+   ├─ 项目文档.md                      完整技术文档：架构分层、API 参考、鉴权与密钥体系、插件二开指南、构建发布、测试体系、已知边界与上线检查清单
    └─ Scripts/
       └─ T_SKY_AUDITLOG.sql           审计表建表脚本（在账套库执行，各审核插件共用）
 ```
@@ -199,7 +200,7 @@ KingdeeSky.DevKit/
   0. 先跑**明文密钥/敏感信息静态扫描**（`eng\scan-secrets.ps1`，可单独运行 `scan-secrets.bat`；也可 `-SkipSecretScan` 跳过），
      扫描范围是**仓库根下全部受版本控制的文件**（`git ls-files`，含同级演示工程/操作台/交付件），有命中立即中断（返回非 0）；
   1. 编译 WebApiClient（Release，零金蝶 DLL 依赖）；
-  2. 跑**测试门禁**（81 个测试：鉴权/密钥来源/配置分层/客户端调用链/传输安全/AppSec 签名/多环境覆盖），任一失败立即中断（返回非 0）；
+  2. 跑**测试门禁**（81 个测试，分五组：鉴权 16 / 密钥与脱敏 18 / 配置与环境 12 / 客户端契约 13 / 传输安全与签名 20，另 2 条不编号以保持 001–079 连续），任一失败立即中断（返回非 0）；
   3. 若 `lib\` 下已有从授权环境拷贝的 `Kingdee.BOS.Core.dll`，自动追加编译 Plugins（用 MSBuild，`KingdeeBinsDir` 指向 lib）；
   4. 产出版本化 ZIP 到 `artifacts\`（含 WebApiClient 可执行体、exe.config、模板、部署指南、SQL、README、VERSION）。
 - **单独跑测试**：`tests\run-tests.bat`（或 `tests\run-tests.ps1`）。

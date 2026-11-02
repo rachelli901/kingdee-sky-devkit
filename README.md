@@ -99,6 +99,7 @@ run-demo.bat
 
 ## 各区域的详细文档
 
+- 完整技术文档（架构 / API / 鉴权与密钥 / 插件二开 / 构建发布 / 测试体系 / 已知边界）：[`KingdeeSky.DevKit/deploy/项目文档.md`](KingdeeSky.DevKit/deploy/项目文档.md)
 - 示例包总览与全部使用说明：[`KingdeeSky.DevKit/README.md`](KingdeeSky.DevKit/README.md)
 - 贡献与分支/提交/发布约定：[`KingdeeSky.DevKit/CONTRIBUTING.md`](KingdeeSky.DevKit/CONTRIBUTING.md)
 - 演示包使用说明：[`KingdeeSky.WebApiClient/README.md`](KingdeeSky.WebApiClient/README.md)
