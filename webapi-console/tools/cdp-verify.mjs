@@ -356,6 +356,15 @@ const PAGE_SCRIPT = `(async () => {
     }
     const pass = result.fail.length === 0 && result.ok.length > 0;
     console.log(pass ? 'CDP_VERIFY: PASS (' + result.ok.length + ' checks)' : 'CDP_VERIFY: FAIL (' + result.fail.length + ' failed of ' + result.summary.total + ')');
+    // Persist the report next to the screenshots. Without this the checked-in
+    // report would silently stay at whatever run produced it, and the README
+    // would keep citing stale evidence for a newer build of the console.
+    const reportPath = path.join(SHOTS, 'cdp-verify-report.txt');
+    const reportBody = JSON.stringify(result, null, 2) + '\n' +
+      (pass ? 'CDP_VERIFY: PASS (' + result.ok.length + ' checks)'
+            : 'CDP_VERIFY: FAIL (' + result.fail.length + ' failed of ' + result.summary.total + ')') + '\n';
+    fs.writeFileSync(reportPath, reportBody, 'utf8');
+    console.log('report written: ' + reportPath);
     process.exitCode = pass ? 0 : 2;
   } catch (e) {
     console.error('CDP_VERIFY ERROR:', (e && e.stack) || e);
